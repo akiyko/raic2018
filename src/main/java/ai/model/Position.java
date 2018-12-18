@@ -15,8 +15,13 @@ public final class Position {
     }
 
     public static Vector3d minus(Position a, Position b) {
-        return new Vector3d(a.x - b.x, a.y - b.y, a.z - b.z);
+        return Vector3d.of(a.x - b.x, a.y - b.y, a.z - b.z);
     }
 
-
+    public Position plus(Vector3d v) {
+        return new Position(x + v.dx, y + v.dy, z + v.dz);
+    }
+    public Position minus(Vector3d v) {
+        return new Position(x - v.dx, y - v.dy, z - v.dz);
+    }
 }

@@ -34,6 +34,5 @@ public class Constants {
     public static final double GRAVITY = 30;
 
 
-    public static final double DOUBLE_ZERO = 0.0000001;
-
+    public static final double DOUBLE_ZERO = 0.000000001;
 }
