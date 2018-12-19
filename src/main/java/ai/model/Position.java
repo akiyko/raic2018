@@ -23,7 +23,11 @@ public final class Position {
     public Position plus(Vector3d v) {
         return new Position(x + v.dx, y + v.dy, z + v.dz);
     }
+
     public Position minus(Vector3d v) {
         return new Position(x - v.dx, y - v.dy, z - v.dz);
+    }
+    public Vector3d minus(Position p) {
+        return Vector3d.of(x - p.x, y - p.y, z - p.z);
     }
 }

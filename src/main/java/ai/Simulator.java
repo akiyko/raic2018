@@ -1,5 +1,6 @@
 package ai;
 
+import ai.model.Dan;
 import ai.model.Entity;
 import ai.model.Position;
 import ai.model.Vector3d;
@@ -38,6 +39,28 @@ public class Simulator {
         e.position = e.position.minus(of(0, GRAVITY * delta_time * delta_time / 2.0, 0));
         e.velocity = e.velocity.minus(of(0, GRAVITY * delta_time, 0));
     }
+
+    public static Dan dan_to_plane(Position point, Position point_on_plane, Vector3d plane_normal) {
+            return Dan.of(dot(point.minus(point_on_plane), plane_normal), plane_normal);
+    }
+
+//
+//    function dan_to_plane(point: Vec3D, point_on_plane: Vec3D, plane_normal: Vec3D):
+//            return {
+//        distance: dot(point - point_on_plane, plane_normal)
+//        normal: plane_normal
+//    }
+//    function dan_to_sphere_inner(point: Vec3D, sphere_center: Vec3D, sphere_radius: Float):
+//            return {
+//        distance: sphere_radius - length(point - sphere_center)
+//        normal: normalize(sphere_center - point)
+//    }
+//    function dan_to_sphere_outer(point: Vec3D, sphere_center: Vec3D, sphere_radius: Float):
+//            return {
+//        distance: length(point - sphere_center) - sphere_radius
+//        normal: normalize(point - sphere_center)
+//    }
+
 
 //    function move(e: Entity):
 //    e.velocity = clamp(e.velocity, MAX_ENTITY_SPEED)
