@@ -3,6 +3,8 @@ package ai.model;
 import static ai.Constants.DOUBLE_ZERO;
 
 /**
+ * immutable
+ *
  * By no one on 18.12.2018.
  */
 public final class Vector3d {
@@ -30,6 +32,15 @@ public final class Vector3d {
 
     public Vector3d plus(Vector3d b) {
         return of(dx + b.dx, dy + b.dy, dz + b.dz);
+    }
+
+    public Vector3d clamp(double max) {
+        double len = length();
+        if(len > max) {
+            return this.multiply(max / len);
+        } else {
+            return this;
+        }
     }
 
     public Vector3d normalize() {

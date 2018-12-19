@@ -51,6 +51,14 @@ public class Vector3dTest {
         assertPositionEquals(new Position(10,20,30).plus(of(1,2,3)), new Position(11,22,33));
     }
 
+    @Test
+    public void testClamp() throws Exception {
+        assertVectorEquals(of(9,0,0).clamp(3), of(3,0,0));
+        assertVectorEquals(of(0,-9,0).clamp(3), of(0,-3,0));
+        assertVectorEquals(of(0,0,9).clamp(3), of(0,0,3));
+        assertVectorEquals(of(1,1,1).clamp(10), of(1,1,1));
+    }
+
     private static void assertVectorEquals(Vector3d a, Vector3d b) {
         assertTrue(isZero(diffSquare(a, b)));
     }

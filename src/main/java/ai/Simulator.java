@@ -4,11 +4,10 @@ import ai.model.Entity;
 import ai.model.Position;
 import ai.model.Vector3d;
 
-import static ai.Constants.MAX_ENTITY_SPEED;
-import static ai.Constants.MAX_HIT_E;
-import static ai.Constants.MIN_HIT_E;
+import static ai.Constants.*;
 import static ai.MathUtils.random;
 import static ai.model.Vector3d.dot;
+import static ai.model.Vector3d.of;
 
 /**
  * By no one on 17.12.2018.
@@ -33,12 +32,11 @@ public class Simulator {
         }
     }
 
-    public static void move(Entity e) {
-
-//        e.velocity = clamp(e.velocity, MAX_ENTITY_SPEED);
-//        e.position += e.velocity * delta_time
-//        e.position.y -= GRAVITY * delta_time * delta_time / 2
-//        e.velocity.y -= GRAVITY * delta_time
+    public static void move(Entity e, double delta_time) {
+        e.velocity = e.velocity.clamp(MAX_ENTITY_SPEED);
+        e.position = e.position.plus(e.velocity.multiply(delta_time));
+        e.position = e.position.minus(of(0, GRAVITY * delta_time * delta_time / 2.0, 0));
+        e.velocity = e.velocity.minus(of(0, GRAVITY * delta_time, 0));
     }
 
 //    function move(e: Entity):

@@ -1,6 +1,8 @@
 package ai.model;
 
 /**
+ * mutable thing
+ *
  * By no one on 18.12.2018.
  */
 public class Entity {

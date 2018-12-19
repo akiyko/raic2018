@@ -1,6 +1,8 @@
 package ai.model;
 
 /**
+ * immutable
+ *
  * By no one on 18.12.2018.
  */
 public final class Position {
