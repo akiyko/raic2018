@@ -24,13 +24,13 @@ public final class Vector3d {
         return of(dx * d, dy * d, dz * d);
     }
 
-//    public Vector3d minus(Vector3d b) {
-//        return of(dx - b.dx, dy - b.dy, dz - b.dz);
-//    }
-//
-//    public Vector3d plus(Vector3d b) {
-//        return of(dx + b.dx, dy + b.dy, dz + b.dz);
-//    }
+    public Vector3d minus(Vector3d b) {
+        return of(dx - b.dx, dy - b.dy, dz - b.dz);
+    }
+
+    public Vector3d plus(Vector3d b) {
+        return of(dx + b.dx, dy + b.dy, dz + b.dz);
+    }
 
     public Vector3d normalize() {
         double len = length();

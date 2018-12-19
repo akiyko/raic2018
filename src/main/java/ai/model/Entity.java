@@ -7,10 +7,7 @@ public class Entity {
     public double mass;
     public double radius;
     public Position position;
+    public Vector3d velocity;
+    public double radiusChangeSpeed;
 
-    public Entity(double mass, double radius, Position position) {
-        this.mass = mass;
-        this.radius = radius;
-        this.position = position;
-    }
 }
