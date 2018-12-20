@@ -1,5 +1,6 @@
 package ai;
 
+import ai.model.Dan;
 import ai.model.Entity;
 import ai.model.Position;
 import ai.model.Vector3d;
@@ -38,6 +39,24 @@ public class SimulatorTest {
         Position onPlane = new Position(100, -10, 200);
 
         assertZero(Simulator.dan_to_plane(p, onPlane, normal).distance - 20);
+    }
+
+    @Test
+    public void danToSphereInnerTest() throws Exception {
+        Position p = new Position(0,1, 0);
+        Position c = new Position(0,10, 0);
+
+        Dan danToSphere = Simulator.dan_to_sphere_inner(p, c, 100);
+        assertZero(danToSphere.distance - 91);
+    }
+
+    @Test
+    public void danToSphereOuterTest() throws Exception {
+        Position p = new Position(0,-100, 0);
+        Position c = new Position(0,10, 0);
+
+        Dan danToSphere = Simulator.dan_to_sphere_inner(p, c, 100);
+        assertZero(danToSphere.distance - 10);
     }
 
     public static void assertZero(double d) {
