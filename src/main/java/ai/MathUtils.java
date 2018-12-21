@@ -20,5 +20,15 @@ public abstract class MathUtils {
         return Math.abs(d) < Constants.DOUBLE_ZERO;
     }
 
+    public static double clamp(double v, double lo, double hi) {//TODO: test
+        if (v < lo) {
+            return lo;
+        }
+        if (v > hi) {
+            return hi;
+        }
+
+        return v;
+    }
 
 }

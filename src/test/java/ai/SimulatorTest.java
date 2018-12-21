@@ -55,7 +55,7 @@ public class SimulatorTest {
         Position p = new Position(0,-100, 0);
         Position c = new Position(0,10, 0);
 
-        Dan danToSphere = Simulator.dan_to_sphere_inner(p, c, 100);
+        Dan danToSphere = Simulator.dan_to_sphere_outer(p, c, 100);
         assertZero(danToSphere.distance - 10);
     }
 
