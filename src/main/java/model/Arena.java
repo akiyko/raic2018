@@ -12,4 +12,21 @@ public final class Arena {
     public double goal_height;
     public double goal_depth;
     public double goal_side_radius;
+
+    @Override
+    public String toString() {
+        return "Arena{" +
+                "width=" + width +
+                ", height=" + height +
+                ", depth=" + depth +
+                ", bottom_radius=" + bottom_radius +
+                ", top_radius=" + top_radius +
+                ", corner_radius=" + corner_radius +
+                ", goal_top_radius=" + goal_top_radius +
+                ", goal_width=" + goal_width +
+                ", goal_height=" + goal_height +
+                ", goal_depth=" + goal_depth +
+                ", goal_side_radius=" + goal_side_radius +
+                '}';
+    }
 }

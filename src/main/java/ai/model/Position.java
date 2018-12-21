@@ -30,4 +30,11 @@ public final class Position {
     public Vector3d minus(Position p) {
         return Vector3d.of(x - p.x, y - p.y, z - p.z);
     }
+
+    public Position negateX() {
+        return new Position(-x, y, z);
+    }
+    public Position negateZ() {
+        return new Position(x, y, -z);
+    }
 }

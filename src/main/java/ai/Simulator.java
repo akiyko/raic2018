@@ -150,7 +150,7 @@ public class Simulator {
             );
             v = of(point.x, point.y).minus(o); //TODO: v already defined!!!
 
-            if (v.x() > 0 && v.y() > 0){
+            if (v.x() > 0 && v.y() > 0) {
                 o = o.plus(v.normalize().multiply(arena.goal_top_radius + arena.goal_side_radius));//TODO: o already defined!!!
                 dan = min(dan, dan_to_sphere_outer(
                         point,
@@ -184,123 +184,155 @@ public class Simulator {
                         arena.goal_top_radius));
             }
         }
-// Bottom corners
-            if (point.y < arena.bottom_radius) {
-// Side x
-                if (point.x > (arena.width / 2) - arena.bottom_radius) {
-                    dan = min(dan, dan_to_sphere_inner(
-                            point,
-                            new Position(
-                                    (arena.width / 2) - arena.bottom_radius,
-                                    arena.bottom_radius,
-                                    point.z
-                            ),
-                            arena.bottom_radius));
-                }
-// Side z
-                if (point.z > (arena.depth / 2) - arena.bottom_radius
-                        && point.x >= (arena.goal_width / 2) + arena.goal_side_radius) {
-                    dan = min(dan, dan_to_sphere_inner(
-                            point,
-                            new Position(
-                                    point.x,
-                                    arena.bottom_radius,
-                                    (arena.depth / 2) - arena.bottom_radius
-                            ),
-                            arena.bottom_radius));
-                }
-// Side z (goal)
+        // Bottom corners
+        if (point.y < arena.bottom_radius) {
+            // Side x
+            if (point.x > (arena.width / 2) - arena.bottom_radius) {
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(
+                                (arena.width / 2) - arena.bottom_radius,
+                                arena.bottom_radius,
+                                point.z
+                        ),
+                        arena.bottom_radius));
+            }
+            // Side z
+            if (point.z > (arena.depth / 2) - arena.bottom_radius
+                    && point.x >= (arena.goal_width / 2) + arena.goal_side_radius) {
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(
+                                point.x,
+                                arena.bottom_radius,
+                                (arena.depth / 2) - arena.bottom_radius
+                        ),
+                        arena.bottom_radius));
+            }
+            // Side z (goal)
             if (point.z > (arena.depth / 2) + arena.goal_depth - arena.bottom_radius) {
                 dan = min(dan, dan_to_sphere_inner(
                         point,
                         new Position(
                                 point.x,
-                        arena.bottom_radius,
-                        (arena.depth / 2) + arena.goal_depth - arena.bottom_radius
+                                arena.bottom_radius,
+                                (arena.depth / 2) + arena.goal_depth - arena.bottom_radius
                         ),
                         arena.bottom_radius));
             }
-                // Goal outer corner
-                Vector2d o = of(
-                        (arena.goal_width / 2) + arena.goal_side_radius,
-                        (arena.depth / 2) + arena.goal_side_radius);
-                v = of(point.x, point.z).minus(o); //v REUSE
-                if (v.x() < 0 && v.y() < 0
-                        && v.length() < arena.goal_side_radius + arena.bottom_radius) {
-                    o = o.plus(v.normalize().multiply(arena.goal_side_radius + arena.bottom_radius));//o REUSE
+            // Goal outer corner
+            Vector2d o = of(
+                    (arena.goal_width / 2) + arena.goal_side_radius,
+                    (arena.depth / 2) + arena.goal_side_radius);
+            v = of(point.x, point.z).minus(o); //v REUSE
+            if (v.x() < 0 && v.y() < 0
+                    && v.length() < arena.goal_side_radius + arena.bottom_radius) {
+                o = o.plus(v.normalize().multiply(arena.goal_side_radius + arena.bottom_radius));//o REUSE
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(o.x(), arena.bottom_radius, o.y()),
+                        arena.bottom_radius));
+            }
+            // Side x (goal)
+            if (point.z >= (arena.depth / 2) + arena.goal_side_radius
+                    && point.x > (arena.goal_width / 2) - arena.bottom_radius) {
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(
+                                (arena.goal_width / 2) - arena.bottom_radius,
+                                arena.bottom_radius,
+                                point.z
+                        ),
+                        arena.bottom_radius));
+            }
+            // Corner
+            if (point.x > (arena.width / 2) - arena.corner_radius
+                    && point.z > (arena.depth / 2) - arena.corner_radius) {
+                Vector2d corner_o = of(
+                        (arena.width / 2) - arena.corner_radius,
+                        (arena.depth / 2) - arena.corner_radius);
+                Vector2d n = of(point.x, point.z).minus(corner_o);
+                double dist = n.length();
+                if (dist > arena.corner_radius - arena.bottom_radius) {
+                    n = n.multiply(1.0 / dist);
+                    Vector2d o2 = corner_o.plus(n.multiply(arena.corner_radius - arena.bottom_radius));
                     dan = min(dan, dan_to_sphere_inner(
                             point,
-                            new Position(o.x(), arena.bottom_radius, o.y()),
+                            new Position(o2.x(), arena.bottom_radius, o2.y()),
                             arena.bottom_radius));
                 }
-                // Side x (goal)
-                if (point.z >= (arena.depth / 2) + arena.goal_side_radius
-                        && point.x > (arena.goal_width / 2) - arena.bottom_radius) {
+            }
+            // Ceiling corners
+            if (point.y > arena.height - arena.top_radius) {
+                // Side x
+                if (point.x > (arena.width / 2) - arena.top_radius) {
                     dan = min(dan, dan_to_sphere_inner(
                             point,
                             new Position(
-                                    (arena.goal_width / 2) - arena.bottom_radius,
-                                    arena.bottom_radius,
+                                    (arena.width / 2) - arena.top_radius,
+                                    arena.height - arena.top_radius,
                                     point.z
                             ),
-                            arena.bottom_radius));
+                            arena.top_radius));
                 }
-// Corner
+                // Side z
+                if (point.z > (arena.depth / 2) - arena.top_radius) {
+                    dan = min(dan, dan_to_sphere_inner(
+                            point,
+                            new Position(
+                                    point.x,
+                                    arena.height - arena.top_radius,
+                                    (arena.depth / 2) - arena.top_radius
+                            ),
+                            arena.top_radius));
+                }
+                // Corner
                 if (point.x > (arena.width / 2) - arena.corner_radius
                         && point.z > (arena.depth / 2) - arena.corner_radius) {
                     Vector2d corner_o = of(
                             (arena.width / 2) - arena.corner_radius,
                             (arena.depth / 2) - arena.corner_radius);
-                    Vector2d n = of(point.x, point.z).minus(corner_o);
-                    double dist = n.length();
-                    if (dist > arena.corner_radius - arena.bottom_radius) {
-                        n = n.multiply(1.0 / dist);
-                        Vector2d o2 = corner_o.plus(n.multiply(arena.corner_radius - arena.bottom_radius));
+                    Vector2d dv = of(point.x, point.z).minus(corner_o);
+                    if (dv.length() > arena.corner_radius - arena.top_radius) {
+                        Vector2d n = dv.normalize();
+                        Vector2d o2 = corner_o.plus(n.multiply(arena.corner_radius - arena.top_radius));
                         dan = min(dan, dan_to_sphere_inner(
                                 point,
-                                new Position(o2.x(), arena.bottom_radius, o2.y()),
-                                arena.bottom_radius));
+                                new Position(o2.x(), arena.height - arena.top_radius, o2.y()),
+                                arena.top_radius));
                     }
-// Ceiling corners
-            if point.y > arena.height - arena.top_radius:
-// Side x
-            if point.x > (arena.width / 2) - arena.top_radius:
-    dan = min(dan, dan_to_sphere_inner(
-            point,
-(
-                      (arena.width / 2) - arena.top_radius,
-    arena.height - arena.top_radius,
-    point.z,
-            ),
-    arena.top_radius))
-// Side z
-            if point.z > (arena.depth / 2) - arena.top_radius:
-    dan = min(dan, dan_to_sphere_inner(
-            point,
-(
-              point.x,
-              arena.height - arena.top_radius,
-(arena.depth / 2) - arena.top_radius,
-            )
-    arena.top_radius))
-// Corner
-            if point.x > (arena.width / 2) - arena.corner_radius
-    and point.z > (arena.depth / 2) - arena.corner_radius:
-    let corner_o = (
-            (arena.width / 2) - arena.corner_radius,
-(arena.depth / 2) - arena.corner_radius
-)
-    let dv = (point.x, point.z) - corner_o
-if length(dv) > arena.corner_radius - arena.top_radius:
-    let n = normalize(dv)
-    let o2 = corner_o + n * (arena.corner_radius - arena.top_radius)
-    dan = min(dan, dan_to_sphere_inner(
-            point,
-(o2.x, arena.height - arena.top_radius, o2.y),
-    arena.top_radius))
-            return dan
-}
+                }
+            }
+        }
+        return dan;
+    }
 
-
+    public static Dan dan_to_arena(Position point, Arena arena) {
+        Position pointTo = point;
+        boolean negate_x = point.x < 0;
+        boolean negate_z = point.z < 0;
+        if (negate_x) {
+//            point.x = -point.x;
+            pointTo = pointTo.negateX();
+        }
+        if (negate_z) {
+//            point.z = -point.z
+            pointTo = pointTo.negateZ();
+        }
+        Dan result = dan_to_arena_quarter(pointTo, arena);
+        double resultnormalx = result.normal.dx;
+        double resultnormalz = result.normal.dz;
+        if (negate_x) {
+//            result.normal.x = -result.normal.x
+            resultnormalx = - resultnormalx;
+        }
+        if (negate_z) {
+//            result.normal.z = -result.normal.z
+            resultnormalz = -resultnormalz;
+        }
+        return Dan.of(result.distance, of(resultnormalx, result.normal.dy, resultnormalz));
+    }
 
 }
+
+
