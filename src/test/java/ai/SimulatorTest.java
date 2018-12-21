@@ -90,6 +90,20 @@ public class SimulatorTest {
         assertSame(of(-0.7071067811865475, 0.0, -0.7071067811865475), dan.normal);
     }
 
+    @Test
+    public void testDanToArena7b() throws Exception {
+        Dan dan = Simulator.dan_to_arena(new Position(26, 2.5, 36), arena);
+        assertZero(dan.distance - 0.22663403553680128);
+        assertSame(of(-0.695520249707788, 0.18028634028353988, -0.695520249707788), dan.normal);
+    }
+
+    @Test
+    public void testDanToArena7t() throws Exception {
+        Dan dan = Simulator.dan_to_arena(new Position(25, 17, 35), arena);
+        assertZero(dan.distance - 0.349022777652678);
+        assertSame(of(-0.5649334206492194, -0.6014153809698787, -0.5649334206492194), dan.normal);
+    }
+
 
 
     @Test

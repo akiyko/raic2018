@@ -262,48 +262,49 @@ public class Simulator {
                             arena.bottom_radius));
                 }
             }
-            // Ceiling corners
-            if (point.y > arena.height - arena.top_radius) {
-                // Side x
-                if (point.x > (arena.width / 2) - arena.top_radius) {
+        }
+        // Ceiling corners
+        if (point.y > arena.height - arena.top_radius) {
+            // Side x
+            if (point.x > (arena.width / 2) - arena.top_radius) {
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(
+                                (arena.width / 2) - arena.top_radius,
+                                arena.height - arena.top_radius,
+                                point.z
+                        ),
+                        arena.top_radius));
+            }
+            // Side z
+            if (point.z > (arena.depth / 2) - arena.top_radius) {
+                dan = min(dan, dan_to_sphere_inner(
+                        point,
+                        new Position(
+                                point.x,
+                                arena.height - arena.top_radius,
+                                (arena.depth / 2) - arena.top_radius
+                        ),
+                        arena.top_radius));
+            }
+            // Corner
+            if (point.x > (arena.width / 2) - arena.corner_radius
+                    && point.z > (arena.depth / 2) - arena.corner_radius) {
+                Vector2d corner_o = of(
+                        (arena.width / 2) - arena.corner_radius,
+                        (arena.depth / 2) - arena.corner_radius);
+                Vector2d dv = of(point.x, point.z).minus(corner_o);
+                if (dv.length() > arena.corner_radius - arena.top_radius) {
+                    Vector2d n = dv.normalize();
+                    Vector2d o2 = corner_o.plus(n.multiply(arena.corner_radius - arena.top_radius));
                     dan = min(dan, dan_to_sphere_inner(
                             point,
-                            new Position(
-                                    (arena.width / 2) - arena.top_radius,
-                                    arena.height - arena.top_radius,
-                                    point.z
-                            ),
+                            new Position(o2.x(), arena.height - arena.top_radius, o2.y()),
                             arena.top_radius));
-                }
-                // Side z
-                if (point.z > (arena.depth / 2) - arena.top_radius) {
-                    dan = min(dan, dan_to_sphere_inner(
-                            point,
-                            new Position(
-                                    point.x,
-                                    arena.height - arena.top_radius,
-                                    (arena.depth / 2) - arena.top_radius
-                            ),
-                            arena.top_radius));
-                }
-                // Corner
-                if (point.x > (arena.width / 2) - arena.corner_radius
-                        && point.z > (arena.depth / 2) - arena.corner_radius) {
-                    Vector2d corner_o = of(
-                            (arena.width / 2) - arena.corner_radius,
-                            (arena.depth / 2) - arena.corner_radius);
-                    Vector2d dv = of(point.x, point.z).minus(corner_o);
-                    if (dv.length() > arena.corner_radius - arena.top_radius) {
-                        Vector2d n = dv.normalize();
-                        Vector2d o2 = corner_o.plus(n.multiply(arena.corner_radius - arena.top_radius));
-                        dan = min(dan, dan_to_sphere_inner(
-                                point,
-                                new Position(o2.x(), arena.height - arena.top_radius, o2.y()),
-                                arena.top_radius));
-                    }
                 }
             }
         }
+
         return dan;
     }
 
@@ -324,7 +325,7 @@ public class Simulator {
         double resultnormalz = result.normal.dz;
         if (negate_x) {
 //            result.normal.x = -result.normal.x
-            resultnormalx = - resultnormalx;
+            resultnormalx = -resultnormalx;
         }
         if (negate_z) {
 //            result.normal.z = -result.normal.z
