@@ -6,6 +6,10 @@ public final class MyStrategy implements Strategy {
 //        System.out.println(rules.arena);
         action.jump_speed = 15;
         action.target_velocity_x = 100;
+    }
 
+    @Override
+    public String customRendering() {
+        return "WhAT'S IT?";
     }
 }
