@@ -2,8 +2,6 @@ package ai;
 
 import ai.model.*;
 import model.Arena;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static ai.MathUtils.isZero;
@@ -16,25 +14,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class SimulatorTest {
 
-    static Arena arena = new Arena();
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        //Arena{width=60.0, height=20.0, depth=80.0, bottom_radius=3.0,
-        // top_radius=7.0, corner_radius=13.0, goal_top_radius=3.0,
-        // goal_width=30.0, goal_height=10.0, goal_depth=10.0, goal_side_radius=1.0}
-        arena.width = 60;
-        arena.height = 20;
-        arena.depth = 80;
-        arena.bottom_radius = 3;
-        arena.top_radius = 7;
-        arena.corner_radius = 13;
-        arena.goal_top_radius = 3;
-        arena.goal_width = 30;
-        arena.goal_height = 10;
-        arena.goal_depth = 10;
-        arena.goal_side_radius = 1;
-    }
+    static Arena arena = TestUtils.standardArena();
 
     @Test
     public void testDanToArena() throws Exception {

@@ -37,4 +37,13 @@ public final class Position {
     public Position negateZ() {
         return new Position(x, y, -z);
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
 }
