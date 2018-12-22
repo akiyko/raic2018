@@ -12,4 +12,5 @@ public class Entity {
     public Vector3d velocity;
     public double radiusChangeSpeed;
 
+    public double arena_e;
 }

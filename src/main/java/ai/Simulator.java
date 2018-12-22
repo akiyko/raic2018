@@ -2,6 +2,11 @@ package ai;
 
 import ai.model.*;
 import model.Arena;
+import model.Robot;
+import model.Rules;
+
+import java.util.Collections;
+import java.util.List;
 
 import static ai.Constants.*;
 import static ai.MathUtils.clamp;
@@ -32,6 +37,22 @@ public class Simulator {
                 b.velocity = b.velocity.minus(impulse.multiply(k_b));
             }
         }
+    }
+
+    public static Vector3d collide_with_arena(Entity e, Arena arena) {
+        Dan danToArena = dan_to_arena(e.position, arena);
+        double distance = danToArena.distance;
+        Vector3d normal = danToArena.normal;
+        double penetration = e.radius - distance;
+        if (penetration > 0) {
+            e.position = e.position.plus(normal.multiply(penetration));
+            double velocity = dot(e.velocity, normal) - e.radiusChangeSpeed;
+            if (velocity < 0) {
+                e.velocity = e.velocity.minus(normal.multiply((1 + e.arena_e) * velocity));
+                return normal;
+            }
+        }
+        return null;
     }
 
     public static void move(Entity e, double delta_time) {
@@ -332,6 +353,94 @@ public class Simulator {
             resultnormalz = -resultnormalz;
         }
         return Dan.of(result.distance, of(resultnormalx, result.normal.dy, resultnormalz));
+    }
+
+    public static void update(double delta_time, Rules rules, List<MyRobot> robots, MyBall ball) {
+        Collections.shuffle(robots);
+        for (MyRobot robot : robots) {
+            if (robot.touch) {
+                Vector3d target_velocity =
+                        robot.action.target_velocity.clamp(ROBOT_MAX_GROUND_SPEED);
+                target_velocity = target_velocity.minus(robot.touch_normal.multiply(dot(robot.touch_normal, target_velocity)));
+                Vector3d target_velocity_change = target_velocity.minus(robot.velocity);
+                if (target_velocity_change.length() > 0) {
+                    double acceleration = ROBOT_ACCELERATION * Math.max(0, robot.touch_normal.dy);
+                    robot.velocity = robot.velocity.plus(
+                            target_velocity_change.normalize().multiply(acceleration * delta_time)
+                                    .clamp(target_velocity_change.length()));
+                }
+            }
+
+            if (robot.action.use_nitro) {
+                Vector3d target_velocity_change =
+                        robot.action.target_velocity.minus(robot.velocity).clamp(robot.nitro * NITRO_POINT_VELOCITY_CHANGE);
+                if (target_velocity_change.length() > 0) {
+                    Vector3d acceleration = target_velocity_change.normalize().multiply(ROBOT_NITRO_ACCELERATION);
+                    Vector3d velocity_change = acceleration.multiply(delta_time).clamp(target_velocity_change.length());
+                    robot.velocity = robot.velocity.plus(velocity_change);
+                    robot.nitro -= velocity_change.length() / NITRO_POINT_VELOCITY_CHANGE;
+                }
+            }
+            move(robot, delta_time);
+            robot.radius = ROBOT_MIN_RADIUS
+                    + (ROBOT_MAX_RADIUS - ROBOT_MIN_RADIUS) * robot.action.jump_speed / ROBOT_MAX_JUMP_SPEED;
+            robot.radiusChangeSpeed = robot.action.jump_speed;
+        }
+        move(ball, delta_time);
+        for (int i = 0; i < robots.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                collideEntities(robots.get(i), robots.get(j));
+            }
+        }
+        for (MyRobot robot : robots) {
+            collideEntities(robot, ball);
+            Vector3d collision_normal = collide_with_arena(robot, rules.arena);
+            if (collision_normal == null) {
+                robot.touch = false;
+            } else {
+                robot.touch = true;
+                robot.touch_normal = collision_normal;
+            }
+        }
+
+        collide_with_arena(ball, rules.arena);
+        if (Math.abs(ball.position.z) > rules.arena.depth / 2 + ball.radius) {
+            goal_scored();
+        }
+
+        //TODO: implement nitro packs
+
+//      for (MyRobot robot : robots) {
+//          if (robot.nitro == MAX_NITRO_AMOUNT) {
+//              continue;
+//          }
+//          for pack in nitro_packs:
+//          if not pack.alive:
+//          continue
+//          if length(robot.position - pack.position) <= robot.radius + pack.radius:
+//          robot.nitro = MAX_NITRO_AMOUNT
+//          pack.alive = false
+//          pack.respawn_ticks = NITRO_PACK_RESPAWN_TICKS
+//      }
+
+    }
+
+    public static void tick(Rules rules, List<MyRobot> robots, MyBall ball) {
+        double delta_time = 1 / TICKS_PER_SECOND;
+        for( int i = 0; i< MICROTICKS_PER_TICK; i++) {
+            update(delta_time / MICROTICKS_PER_TICK, rules, robots, ball);
+        }
+//        for pack in nitro_packs:
+//        if pack.alive:
+//        continue
+//                pack.respawn_ticks -= 1
+//        if pack.respawn_ticks == 0:
+//        pack.alive = true
+    }
+
+
+    public static void goal_scored() {
+        //TODO: implement!!!
     }
 
 }
