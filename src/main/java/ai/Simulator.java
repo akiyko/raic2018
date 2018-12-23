@@ -441,6 +441,7 @@ public class Simulator {
 
     public static void goal_scored() {
         //TODO: implement!!!
+        System.out.println("Goal scored");
     }
 
 }

@@ -32,13 +32,11 @@ public class PlayTest {
         List<MyRobot> robots = Collections.singletonList(r);
 
         for (int i = 0; i < GAME_TICKS_SHORT; i++) {
+            r.action.target_velocity = ball.position.minus(r.position).multiply(100);//max speed to ball
+
             System.out.println("Tick # " + i + "Robot: " + r.position);
             Simulator.tick(rules, robots, ball);
-            if(r.touch) {
-                r.action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
-            } else {
-                r.action.jump_speed = 0;
-            }
+
         }
     }
 }
