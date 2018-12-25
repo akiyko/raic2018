@@ -65,24 +65,29 @@ public class FaceOff {
             Map<Integer, MyRobot> myRobotMap = toMapClone(myrobots);
             Map<Integer, MyRobot> oppRobMap = toMapClone(opprobots);
 
+            Map<Integer, MyRobot> myRobotMapNegateZ = toMapCloneNegateZ(myrobots);
+            Map<Integer, MyRobot> oppRobMapNegateZ = toMapCloneNegateZ(opprobots);
+
             myStrategy.act(myRobotMap, oppRobMap, myBall, arena);
-            opponentStrategy.act(oppRobMap, myRobotMap, myBall.clone(), arena);
+            opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena);
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
                 myrobots.get(entry.getKey()).action = entry.getValue().action;
             }
-            for (Map.Entry<Integer, MyRobot> entry : oppRobMap.entrySet()) {
+            for (Map.Entry<Integer, MyRobot> entry : oppRobMapNegateZ.entrySet()) {
                 opprobots.get(entry.getKey()).action = entry.getValue().action;
+                opprobots.get(entry.getKey()).action.target_velocity_z = -opprobots.get(entry.getKey()).action.target_velocity_z;
+                opprobots.get(entry.getKey()).action.target_velocity = opprobots.get(entry.getKey()).action.target_velocity.negateZ();
             }
 
             try {
                 Simulator.tick(rules, robots, myBall);
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
-                    System.out.println("Goal scored for me at tick " + i);
+//                    System.out.println("Goal scored for me at tick " + i);
                     myGoals ++;
                 } else {
-                    System.out.println("Goal scored for opponent at tick " + i);
+//                    System.out.println("Goal scored for opponent at tick " + i);
                     oppGoals ++;
                 }
 
@@ -107,6 +112,15 @@ public class FaceOff {
         return result;
     }
 
+    Map<Integer, MyRobot> toMapCloneNegateZ(List<MyRobot> robots) {
+        Map<Integer, MyRobot> result = new HashMap<>();
+        for (int i = 0; i < robots.size(); i++) {
+            result.put(i, robots.get(i).cloneNegateZ());
+        }
+
+        return result;
+    }
+
     public static List<MyRobot> myRobots() {
         MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 10, -10));
         MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 10, -10));
@@ -114,8 +128,8 @@ public class FaceOff {
     }
 
     public static List<MyRobot> oppRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 10, -10));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 10, -10));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 10, 10));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 10, 10));
         return Arrays.asList(r1,r2);
     }
 

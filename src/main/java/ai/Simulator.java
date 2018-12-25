@@ -440,7 +440,7 @@ public class Simulator {
 
     public static void goal_scored(double z) throws RuntimeException {
         //TODO: implement!!!
-        System.out.println("Goal scored");
+//        System.out.println("Goal scored");
         throw new GoalScoredException(z);
     }
 

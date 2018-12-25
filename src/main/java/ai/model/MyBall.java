@@ -13,4 +13,9 @@ public class MyBall extends Entity implements Cloneable{
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public MyBall cloneNegateZ() {
+        return (MyBall) super.cloneNegateZ();
+    }
 }

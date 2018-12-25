@@ -71,4 +71,9 @@ public final class Vector3d {
     public static double diffSquare(Vector3d a, Vector3d b) {
         return sq(a.dx - b.dx) + sq(a.dy - b.dy) + sq(a.dz - b.dz);
     }
+
+    public Vector3d negateZ() {
+        return new Vector3d(dx, dy, -dz);
+    }
+
 }

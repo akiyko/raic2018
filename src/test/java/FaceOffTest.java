@@ -14,10 +14,29 @@ public class FaceOffTest {
     }
 
     @Test
-    public void testJustKickDon() throws Exception {
-        FaceOff faceOff = new FaceOff(new JustKickStrategy(), new DoNothingMyStrategy());
+    public void testJustKickJDon() throws Exception {
+        FaceOff faceOff = new FaceOff(new JustKickStrategy(true), new DoNothingMyStrategy());
+//        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new JustKickStrategy());
 
         faceOff.simulate();
 
+    } @Test
+    public void testJustKickDon() throws Exception {
+        FaceOff faceOff = new FaceOff(new JustKickStrategy(false), new DoNothingMyStrategy());
+//        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new JustKickStrategy());
+
+        faceOff.simulate();
+
+    }
+
+    @Test
+    public void testJustKickPvP() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            FaceOff faceOff = new FaceOff(new JustKickStrategy(false), new JustKickStrategy(true));
+//        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new JustKickStrategy());
+
+            faceOff.simulate();
+
+        }
     }
 }

@@ -48,4 +48,14 @@ public class MyRobot extends Entity {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public MyRobot cloneNegateZ() {
+        MyRobot mr = (MyRobot) super.cloneNegateZ();
+        if(mr.touch_normal != null) {
+            mr.touch_normal = mr.touch_normal.negateZ();
+        }
+
+        return  mr;
+    }
 }
