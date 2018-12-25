@@ -2,7 +2,6 @@ package ai;
 
 import ai.model.*;
 import model.Arena;
-import model.Robot;
 import model.Rules;
 
 import java.util.Collections;
@@ -12,9 +11,9 @@ import static ai.Constants.*;
 import static ai.MathUtils.clamp;
 import static ai.MathUtils.random;
 import static ai.model.Dan.min;
+import static ai.model.Vector2d.of;
 import static ai.model.Vector3d.dot;
 import static ai.model.Vector3d.of;
-import static ai.model.Vector2d.of;
 
 /**
  * By no one on 17.12.2018.
@@ -169,10 +168,10 @@ public class Simulator {
                     (arena.goal_width / 2) - arena.goal_top_radius,
                     arena.goal_height - arena.goal_top_radius
             );
-            v = of(point.x, point.y).minus(o); //TODO: v already defined!!!
+            v = of(point.x, point.y).minus(o);
 
             if (v.x() > 0 && v.y() > 0) {
-                o = o.plus(v.normalize().multiply(arena.goal_top_radius + arena.goal_side_radius));//TODO: o already defined!!!
+                o = o.plus(v.normalize().multiply(arena.goal_top_radius + arena.goal_side_radius));
                 dan = min(dan, dan_to_sphere_outer(
                         point,
                         new Position(o.x(), o.y(), (arena.depth / 2) + arena.goal_side_radius),
@@ -405,7 +404,7 @@ public class Simulator {
 
         collide_with_arena(ball, rules.arena);
         if (Math.abs(ball.position.z) > rules.arena.depth / 2 + ball.radius) {
-            goal_scored();
+            goal_scored(ball.position.z);
         }
 
         //TODO: implement nitro packs
@@ -439,9 +438,10 @@ public class Simulator {
     }
 
 
-    public static void goal_scored() {
+    public static void goal_scored(double z) throws RuntimeException {
         //TODO: implement!!!
         System.out.println("Goal scored");
+        throw new GoalScoredException(z);
     }
 
 }

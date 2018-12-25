@@ -5,7 +5,7 @@ package ai.model;
  *
  * By no one on 18.12.2018.
  */
-public class Entity {
+public class Entity implements Cloneable {
     public double mass;
     public double radius;
     public Position position;

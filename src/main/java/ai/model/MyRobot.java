@@ -39,4 +39,13 @@ public class MyRobot extends Entity {
 
         return r;
     }
+
+    @Override
+    public MyRobot clone() {
+        try {
+            return (MyRobot) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
