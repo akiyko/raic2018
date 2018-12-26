@@ -82,6 +82,7 @@ public class FaceOff {
 
             try {
                 Simulator.tick(rules, robots, myBall);
+                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position + "/ p1" + myrobots.get(1).position);
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
 //                    System.out.println("Goal scored for me at tick " + i);
@@ -122,14 +123,14 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 10, -10));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 10, -10));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, -30));
         return Arrays.asList(r1,r2);
     }
 
     public static List<MyRobot> oppRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 10, 10));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 10, 10));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, 30));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, 30));
         return Arrays.asList(r1,r2);
     }
 
