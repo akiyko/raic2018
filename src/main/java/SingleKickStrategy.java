@@ -1,9 +1,12 @@
 import ai.Constants;
+import ai.LookAhead;
 import ai.model.MyBall;
 import ai.model.MyRobot;
 import ai.model.Vector3d;
+import ai.plan.*;
 import model.Action;
 import model.Arena;
+import model.Rules;
 
 import java.util.Map;
 
@@ -11,44 +14,31 @@ import static ai.model.Vector3d.of;
 
 public final class SingleKickStrategy implements MyMyStrategy {
 
-    private final boolean jumping;
-
-
-
-    public SingleKickStrategy() {
-        this.jumping = false;
-    }
-    public SingleKickStrategy(boolean jumping) {
-        this.jumping = jumping;
-    }
+    public static final int TICK_DEPTH = 400;
 
     public void act(MyRobot r, MyBall ball, Arena arena) {
-        Action action = new Action();
+        Rules rules = new Rules();
+        rules.arena = arena;
 
-        if(r.position.z > 5) {
-            action.target_velocity = of(0,0,0);
-        } else {
+        int steps = 100;
 
-            if (r.position.z <= ball.position.z) {
-                action.target_velocity_x = (ball.position.x - r.position.x) * 100;
-                action.target_velocity_z = (ball.position.z - r.position.z) * 100;
-            } else {
-                action.target_velocity_x = (ball.position.x - r.position.x) * 100;
-                action.target_velocity_z = -(arena.depth / 2 + Constants.ROBOT_MIN_RADIUS * 2) - r.position.z;
-            }
-            action.target_velocity = of(action.target_velocity_x, action.target_velocity_y, action.target_velocity_z);
+        for (int i = 0; i < 100; i++) {
+             double x = Math.cos(2 * Math.PI * i / steps);
+             double z = Math.sin(2 * Math.PI * i / steps);
 
-            if (jumping) {
-                Vector3d toBall = ball.position.minus(r.position);
-                Vector3d flatPos = of(toBall.dx, 0, toBall.dz);
+             MyRobot mr = r.clone();
+             MyBall mb = ball.clone();
 
-                if (flatPos.length() < Constants.ROBOT_RADIUS + Constants.BALL_RADIUS - 0.2) {
-                    action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
-                }
-            }
+            RobotGamePlan plan = new RobotGamePlan();
+            TargetVelocityProvider velocityProvider = new FixedTargetVelocity(of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED));
+            plan.initialPosition = mr.clone();
+            plan.jumpCondition = (myRobot, myBall) -> 0;
+            plan.targetVelocityProvider = velocityProvider;
 
+            GamePlanResult gpr = LookAhead.predictRobotBallFuture(rules, r, mb, plan, TICK_DEPTH);
+            System.out.println(i + " min len: " + gpr.minToBall.length());
         }
-        r.action = action;
+
     }
 
 
@@ -63,5 +53,6 @@ public final class SingleKickStrategy implements MyMyStrategy {
         Action nop = new Action();
         nop.target_velocity = of(0,0,0);
         myRobots.get(1).action = nop;
+        myRobots.get(0).action = nop;
     }
 }

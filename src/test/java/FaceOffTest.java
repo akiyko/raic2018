@@ -15,7 +15,7 @@ public class FaceOffTest {
 
     @Test
     public void testSingleKickJDon() throws Exception {
-        FaceOff faceOff = new FaceOff(new SingleKickStrategy(true), new DoNothingMyStrategy());
+        FaceOff faceOff = new FaceOff(new SingleKickStrategy(), new DoNothingMyStrategy());
 //        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new JustKickStrategy());
 
         faceOff.simulate();
