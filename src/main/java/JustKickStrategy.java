@@ -41,7 +41,7 @@ public final class JustKickStrategy implements MyMyStrategy {
             action.target_velocity_z = (ball.position.z - r.position.z) * 100;
         } else {
             action.target_velocity_x = (ball.position.x - r.position.x) * 100;
-            action.target_velocity_z = -(arena.depth / 2 + Constants.ROBOT_MIN_RADIUS * 2) - r.position.z;
+            action.target_velocity_z = -(arena.depth * 0.5 + Constants.ROBOT_MIN_RADIUS * 2) - r.position.z;
         }
         action.target_velocity = of(action.target_velocity_x, action.target_velocity_y, action.target_velocity_z);
 

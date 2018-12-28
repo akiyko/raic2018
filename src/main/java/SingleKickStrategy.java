@@ -14,17 +14,19 @@ import static ai.model.Vector3d.of;
 
 public final class SingleKickStrategy implements MyMyStrategy {
 
-    public static final int TICK_DEPTH = 400;
+    public static final int TICK_DEPTH = 600;
 
     public void act(MyRobot r, MyBall ball, Arena arena) {
         Rules rules = new Rules();
         rules.arena = arena;
 
-        int steps = 100;
+        int steps = 10000;
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1900; i++) {
              double x = Math.cos(2 * Math.PI * i / steps);
              double z = Math.sin(2 * Math.PI * i / steps);
+
+//            System.out.println("x/z: " + x + "/"  + z);
 
              MyRobot mr = r.clone();
              MyBall mb = ball.clone();
@@ -32,11 +34,18 @@ public final class SingleKickStrategy implements MyMyStrategy {
             RobotGamePlan plan = new RobotGamePlan();
             TargetVelocityProvider velocityProvider = new FixedTargetVelocity(of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED));
             plan.initialPosition = mr.clone();
-            plan.jumpCondition = (myRobot, myBall) -> 0;
+            plan.jumpCondition = (myRobot, myBall) -> {
+                if(myRobot.position.minus(myBall.position).length() < 4) {
+                    return 15;
+                } else {
+                    return 0;
+                }
+
+            };
             plan.targetVelocityProvider = velocityProvider;
 
-            GamePlanResult gpr = LookAhead.predictRobotBallFuture(rules, r, mb, plan, TICK_DEPTH);
-            System.out.println(i + " min len: " + gpr.minToBall.length());
+            GamePlanResult gpr = LookAhead.predictRobotBallFuture(rules, mr, mb, plan, TICK_DEPTH);
+            System.out.println(i + " min len to ball/gate     : " + gpr.minToBall.length() + " / " + gpr.minBallToOppGateCenter.length() + "goal at: " + gpr.goalScoredTick);
         }
 
     }

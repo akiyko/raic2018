@@ -1,6 +1,7 @@
 package ai.plan;
 
 import ai.Constants;
+import ai.MathUtils;
 import ai.model.Position;
 import ai.model.Vector3d;
 
@@ -18,5 +19,7 @@ public class GamePlanResult {
    public List<Position> robotPositions = new ArrayList<>();
    public List<Position> ballPositions = new ArrayList<>();
 
-   public Vector3d minToBall = Vector3d.of(10000, 10000, 10000);
+   public Vector3d minToBall = MathUtils.MAX_VECTOR;
+
+   public Vector3d minBallToOppGateCenter = MathUtils.MAX_VECTOR;
 }

@@ -16,7 +16,8 @@ import java.util.*;
  * By no one on 23.12.2018.
  */
 public class FaceOff {
-    public static final int GAME_TICKS = 18_000;
+//    public static final int GAME_TICKS = 18_000;
+    public static final int GAME_TICKS = 1;
 
     private MyMyStrategy myStrategy;
     private MyMyStrategy opponentStrategy;
@@ -123,8 +124,8 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, -30));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-15, 2, -5));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(15, 2, -5));
         return Arrays.asList(r1,r2);
     }
 

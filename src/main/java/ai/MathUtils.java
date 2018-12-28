@@ -1,5 +1,7 @@
 package ai;
 
+import ai.model.Vector3d;
+
 import java.util.Random;
 
 /**
@@ -8,6 +10,8 @@ import java.util.Random;
  */
 public abstract class MathUtils {
     static Random r = new Random();
+
+    public static Vector3d MAX_VECTOR = Vector3d.of(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
 
     private MathUtils() {
     }
