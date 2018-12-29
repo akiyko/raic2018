@@ -4,13 +4,15 @@ import ai.model.MyBall;
 import ai.model.MyRobot;
 import ai.model.Position;
 import ai.model.Vector3d;
-import ai.plan.GamePlanResult;
-import ai.plan.RobotGamePlan;
+import ai.plan.*;
 import model.Action;
 import model.Arena;
 import model.Rules;
 
 import java.util.Collections;
+import java.util.Optional;
+
+import static ai.model.Vector3d.of;
 
 /**
  * @author akiyko
@@ -18,7 +20,7 @@ import java.util.Collections;
  */
 public class LookAhead {
     public static GamePlanResult predictRobotBallFuture(Rules rules, MyRobot myRobot,
-                                                       MyBall myBall, RobotGamePlan robotGamePlan, int tickDepth) {
+                                                        MyBall myBall, RobotGamePlan robotGamePlan, int tickDepth, int mpt) {
         GamePlanResult result = new GamePlanResult();
         Vector3d originalVelocity = myRobot.velocity;
 
@@ -29,19 +31,19 @@ public class LookAhead {
             myRobot.action.jump_speed = robotGamePlan.jumpCondition.jumpSpeed(myRobot, myBall);
 
             Vector3d toBall = myBall.position.minus(myRobot.position);
-            if(toBall.lengthSquare() < result.minToBall.lengthSquare()) {
+            if (toBall.lengthSquare() < result.minToBall.lengthSquare()) {
                 result.minToBall = toBall;
             }
 
             Vector3d toGateCenterMin = oppGateCenter(rules.arena, myBall);
-            if(toGateCenterMin.lengthSquare() < result.minBallToOppGateCenter.lengthSquare()) {
+            if (toGateCenterMin.lengthSquare() < result.minBallToOppGateCenter.lengthSquare()) {
                 result.minBallToOppGateCenter = toGateCenterMin;
             }
 
             try {
-                Simulator.tick(rules, Collections.singletonList(myRobot), myBall);
+                Simulator.tick(rules, Collections.singletonList(myRobot), myBall, mpt);
             } catch (GoalScoredException e) {
-                if(e.getZ() > 0) {
+                if (e.getZ() > 0) {
                     result.goalScoredTick = i;
                 } else {
                     result.oppGoalScored = i;
@@ -53,6 +55,59 @@ public class LookAhead {
         return result;
     }
 
+    public static BestMoveDouble singleRobotKickGoalGround(Rules rules, MyRobot myRobot,
+                                                           MyBall myBall, JumpCondition jumpCondition,
+                                                           double minAngle, double maxAngle, long steps,
+                                                           double minLenToBallRequired,
+                                                           boolean goalRequired,
+                                                           int toBallTickDepth, int toGateTickDepth,
+                                                           int mpt) {
+
+        double dangle = (maxAngle - minAngle) / steps;
+
+        Optional<Double> minAngleConditionMatched = Optional.empty();
+        Optional<Double> bestAngleConditionMatched = Optional.empty();
+        Optional<Double> maxAngleConditionMatched = Optional.empty();
+        GamePlanResult low = null;
+        GamePlanResult high = null;
+
+
+        MyRobot mr = myRobot.clone();
+        MyBall mb = myBall.clone();
+
+        for (int i = 0; i <= steps; i++) {
+            double x = Math.cos(minAngle + dangle * i);
+            double z = Math.sin(minAngle + dangle * i);
+
+            RobotGamePlan plan = new RobotGamePlan();
+            plan.targetVelocityProvider = new FixedTargetVelocity(of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED));
+            plan.jumpCondition = jumpCondition;
+
+            if (!goalRequired) {
+                GamePlanResult res = predictRobotBallFuture(rules, mr.clone(), mb.clone(), plan, toBallTickDepth, mpt);
+
+//                System.out.println(i + ": " + res.minToBall.length());
+                if (res.minToBall.length() < minLenToBallRequired) {
+                    if (!minAngleConditionMatched.isPresent()) {
+                        minAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                        low = res;
+                    }
+                    maxAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                    high = res;
+                }
+            }
+        }
+
+        BestMoveDouble bestMove = new BestMoveDouble();
+        bestMove.lowPlanResult = low;
+        bestMove.low = minAngleConditionMatched.orElse(0.0);
+
+        bestMove.hiPlanResult = high;
+        bestMove.hi = maxAngleConditionMatched.orElse(0.0);
+
+        return bestMove;
+//      System.out.println("x/z: " + x + "/"  + z);
+    }
 
 
     private static Vector3d oppGateCenter(Arena arena, MyBall myBall) {

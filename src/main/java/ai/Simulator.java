@@ -425,9 +425,14 @@ public class Simulator {
     }
 
     public static void tick(Rules rules, List<MyRobot> robots, MyBall ball) {
-        double delta_time = 1 / TICKS_PER_SECOND;
-        for( int i = 0; i< MICROTICKS_PER_TICK; i++) {
-            update(delta_time / MICROTICKS_PER_TICK, rules, robots, ball);
+        tick(rules, robots, ball, MICROTICKS_PER_TICK);
+
+    }
+
+    public static void tick(Rules rules, List<MyRobot> robots, MyBall ball, double microticksPerTick) {
+        double delta_time = 1.0 / microticksPerTick;
+        for( int i = 0; i< microticksPerTick; i++) {
+            update(delta_time / microticksPerTick, rules, robots, ball);
         }
 //        for pack in nitro_packs:
 //        if pack.alive:

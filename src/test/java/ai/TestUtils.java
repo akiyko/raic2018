@@ -6,6 +6,7 @@ import ai.model.Position;
 import ai.model.Vector3d;
 import model.Action;
 import model.Arena;
+import model.Rules;
 import org.junit.BeforeClass;
 
 import static ai.model.Vector3d.of;
@@ -33,6 +34,13 @@ public class TestUtils {
         arena.goal_side_radius = 1;
 
         return arena;
+    }
+
+    public static Rules standardRules() {
+        Rules rules = new Rules();
+        rules.arena = standardArena();
+
+        return rules;
     }
 
     public static MyRobot robotInTheAir(Position startLocation) {
