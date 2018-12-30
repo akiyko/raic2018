@@ -19,7 +19,7 @@ public final class Runner {
 
     public void run() throws IOException {
 //        Strategy strategy = new MyStrategy();
-        Strategy strategy = new MyStrategy();
+        Strategy strategy = new StrategyWrapper(new SingleKickGoalLahStrategy());
         Map<Integer, Action> actions = new HashMap<>();
         Game game;
         remoteProcessClient.writeToken(token);

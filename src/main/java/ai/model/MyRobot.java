@@ -1,13 +1,16 @@
 package ai.model;
 
+import ai.Constants;
 import model.Action;
 import model.Robot;
+
+import static ai.model.Vector3d.of;
 
 /**
  * By no one on 22.12.2018.
  */
 public class MyRobot extends Entity {
-//    public int id;
+    public int id;
 //    public int player_id;
 //    public boolean is_teammate;
     public boolean touch;
@@ -40,6 +43,24 @@ public class MyRobot extends Entity {
         return r;
     }
 
+    public static MyRobot fromRobot(Robot r) {
+        MyRobot mr = new MyRobot();
+        mr.velocity = of(r.velocity_x, r.velocity_y, r.velocity_z);
+        mr.position = new Position(r.x, r.y, r.z);
+        mr.touch = r.touch;
+        mr.touch_normal = of(r.touch_normal_x, r.touch_normal_y, r.touch_normal_z);
+
+        mr.radius = r.radius;
+
+        mr.nitro = r.nitro_amount;
+        mr.id = r.id;
+
+        mr.mass = Constants.ROBOT_MASS;
+        mr.arena_e = Constants.ROBOT_ARENA_E;
+
+        return mr;
+    }
+
     @Override
     public MyRobot clone() {
         try {
@@ -57,5 +78,15 @@ public class MyRobot extends Entity {
         }
 
         return  mr;
+    }
+
+    @Override
+    public String toString() {
+        return "MyRobot{" +
+                "position=" + position +
+                ", velocity=" + velocity +
+                ", action=" + action +
+                ", touch_normal=" + touch_normal +
+                '}';
     }
 }

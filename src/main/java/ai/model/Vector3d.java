@@ -76,4 +76,12 @@ public final class Vector3d {
         return new Vector3d(dx, dy, -dz);
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "dx=" + dx +
+                ", dy=" + dy +
+                ", dz=" + dz +
+                '}';
+    }
 }

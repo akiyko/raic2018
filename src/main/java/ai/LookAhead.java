@@ -55,6 +55,19 @@ public class LookAhead {
         return result;
     }
 
+    public static BestMoveDouble singleKickGoalBase(Rules rules, MyRobot myRobot,
+                                  MyBall myBall, JumpCondition jumpCondition) {
+        BestMoveDouble bmdBall = LookAhead.singleRobotKickGoalGround(rules, myRobot.clone(), myBall.clone(), jumpCondition, -Math.PI, Math.PI, 72,
+                (Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS) + 2, false, 150, 300, 100);
+
+        System.out.println("BmdBall: " + bmdBall);
+
+        BestMoveDouble bmdGoal = LookAhead.singleRobotKickGoalGround(rules, myRobot.clone(), myBall.clone(), jumpCondition, bmdBall.low, bmdBall.hi, 72,
+                0.0, true, 150, 300, 100);
+
+        return bmdGoal;
+    }
+
     public static BestMoveDouble singleRobotKickGoalGround(Rules rules, MyRobot myRobot,
                                                            MyBall myBall, JumpCondition jumpCondition,
                                                            double minAngle, double maxAngle, long steps,
@@ -95,6 +108,18 @@ public class LookAhead {
                     maxAngleConditionMatched = Optional.of(minAngle + dangle * i);
                     high = res;
                 }
+            } else {
+                GamePlanResult res = predictRobotBallFuture(rules, mr.clone(), mb.clone(), plan, toGateTickDepth, mpt);
+
+                if (res.goalScoredTick > 0) {
+                    if (!minAngleConditionMatched.isPresent()) {
+                        minAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                        low = res;
+                    }
+                    maxAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                    high = res;
+                }
+
             }
         }
 

@@ -12,4 +12,11 @@ public final class Action {
     //
     public Vector3d target_velocity;
 
+    @Override
+    public String toString() {
+        return "Action{" +
+                "jump_speed=" + jump_speed +
+                ", target_velocity=" + target_velocity +
+                '}';
+    }
 }

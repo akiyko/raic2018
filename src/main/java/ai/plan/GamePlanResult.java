@@ -17,4 +17,14 @@ public class GamePlanResult {
    public Vector3d minToBall = MathUtils.MAX_VECTOR;
 
    public Vector3d minBallToOppGateCenter = MathUtils.MAX_VECTOR;
+
+   @Override
+   public String toString() {
+      return "GamePlanResult{" +
+              "goalScoredTick=" + goalScoredTick +
+              ", oppGoalScored=" + oppGoalScored +
+              ", minToBall=" + minToBall.length() +
+              ", minToOppGateCenter=" + minBallToOppGateCenter.length() +
+              '}';
+   }
 }
