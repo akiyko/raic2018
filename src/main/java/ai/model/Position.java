@@ -1,5 +1,7 @@
 package ai.model;
 
+import ai.MathUtils;
+
 /**
  * immutable
  *
@@ -36,6 +38,12 @@ public final class Position {
     }
     public Position negateZ() {
         return new Position(x, y, -z);
+    }
+
+    public boolean doubleEquals(Position b) {
+        return MathUtils.isZero(x - b.x)
+                && MathUtils.isZero(y - b.y)
+                && MathUtils.isZero(z - b.z);
     }
 
     @Override

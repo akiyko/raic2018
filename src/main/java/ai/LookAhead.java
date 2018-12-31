@@ -9,6 +9,7 @@ import model.Action;
 import model.Arena;
 import model.Rules;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -19,6 +20,50 @@ import static ai.model.Vector3d.of;
  * @since 12/27/2018.
  */
 public class LookAhead {
+    public static BallTrace ballUntouchedTraceOptimized(Rules rules, MyBall myBall, int tickDepth, int mpt) {
+
+        BallTrace bt = new BallTrace();
+
+        int i = 0;
+        try {
+            for (; i < tickDepth; i++) {
+                Simulator.updateBallOnlyTick(rules, myBall, mpt);
+                bt.ballTrace.add(myBall.clone());
+            }
+
+        } catch (GoalScoredException e) {
+            if (e.getZ() > 0) {
+                bt.goalScoredTick = i;
+            } else {
+                bt.oppGoalScoredTick = i;
+            }
+        }
+
+        return bt;
+    }
+
+    public static BallTrace ballUntouchedTraceSimulator(Rules rules, MyBall myBall, int tickDepth, int mpt) {
+
+        BallTrace bt = new BallTrace();
+
+        int i = 0;
+        try {
+            for (; i < tickDepth; i++) {
+                Simulator.tick(rules, Collections.emptyList(), myBall, mpt);
+                bt.ballTrace.add(myBall.clone());
+            }
+
+        } catch (GoalScoredException e) {
+            if (e.getZ() > 0) {
+                bt.goalScoredTick = i;
+            } else {
+                bt.oppGoalScoredTick = i;
+            }
+        }
+
+        return bt;
+    }
+
     public static GamePlanResult predictRobotBallFuture(Rules rules, MyRobot myRobot,
                                                         MyBall myBall, RobotGamePlan robotGamePlan, int tickDepth, int mpt) {
         GamePlanResult result = new GamePlanResult();
@@ -56,7 +101,7 @@ public class LookAhead {
     }
 
     public static BestMoveDouble singleKickGoalBase(Rules rules, MyRobot myRobot,
-                                  MyBall myBall, JumpCondition jumpCondition) {
+                                                    MyBall myBall, JumpCondition jumpCondition) {
         BestMoveDouble bmdBall = LookAhead.singleRobotKickGoalGround(rules, myRobot.clone(), myBall.clone(), jumpCondition, -Math.PI, Math.PI, 72,
                 (Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS) + 2, false, 150, 300, 100);
 

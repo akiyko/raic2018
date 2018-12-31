@@ -19,6 +19,7 @@ import static ai.model.Vector3d.of;
  * By no one on 17.12.2018.
  */
 public class Simulator {
+
     public static void collideEntities(Entity a, Entity b) {
         Vector3d delta_position = Position.minus(b.position, a.position);
         double distance = delta_position.length();
@@ -40,6 +41,43 @@ public class Simulator {
 
     public static Vector3d collide_with_arena(Entity e, Arena arena) {
         Dan danToArena = dan_to_arena(e.position, arena);
+        double distance = danToArena.distance;
+        Vector3d normal = danToArena.normal;
+        double penetration = e.radius - distance;
+        if (penetration > 0) {
+            e.position = e.position.plus(normal.multiply(penetration));
+            double velocity = dot(e.velocity, normal) - e.radiusChangeSpeed;
+            if (velocity < 0) {
+                e.velocity = e.velocity.minus(normal.multiply((1 + e.arena_e) * velocity));
+                return normal;
+            }
+        }
+        return null;
+    }
+
+    public static Vector3d collide_with_arena_bot(Entity e, Arena arena) {
+        Position pointTo = e.position;
+        boolean negate_x = pointTo.x < 0;
+        boolean negate_z = pointTo.z < 0;
+        if (negate_x) {
+            pointTo = pointTo.negateX();
+        }
+        if (negate_z) {
+            pointTo = pointTo.negateZ();
+        }
+        Dan result =  dan_to_plane(pointTo, new Position(0, 0, 0), of(0, 1, 0));
+        double resultnormalx = result.normal.dx;
+        double resultnormalz = result.normal.dz;
+        if (negate_x) {
+//            result.normal.x = -result.normal.x
+            resultnormalx = -resultnormalx;
+        }
+        if (negate_z) {
+//            result.normal.z = -result.normal.z
+            resultnormalz = -resultnormalz;
+        }
+        Dan danToArena = Dan.of(result.distance, of(resultnormalx, result.normal.dy, resultnormalz));
+
         double distance = danToArena.distance;
         Vector3d normal = danToArena.normal;
         double penetration = e.radius - distance;
@@ -354,6 +392,42 @@ public class Simulator {
         return Dan.of(result.distance, of(resultnormalx, result.normal.dy, resultnormalz));
     }
 
+    public static void updateBallOnlyTick(Rules rules, MyBall ball, double mpt) throws GoalScoredException {
+
+//        let delta_time = 1 / TICKS_PER_SECOND
+//        for _ in 0 .. MICROTICKS_PER_TICK - 1:
+//        update(delta_time / MICROTICKS_PER_TICK)
+        double delta_time = 1.0 / (TICKS_PER_SECOND * mpt);
+
+        Dan danToArena = dan_to_arena(ball.position, rules.arena);
+
+        boolean isBottom = Math.abs(ball.position.x) < rules.arena.width * 0.5 - rules.arena.bottom_radius - 3
+                && Math.abs(ball.position.z) < rules.arena.depth * 0.5 - rules.arena.bottom_radius - 3
+                && MathUtils.isZero(danToArena.normal.dx) && MathUtils.isZero(danToArena.normal.dz) && danToArena.normal.dy > 0;
+
+        //if no collision in two ticks - don't do collide
+        if(danToArena.distance > ball.radius + 1.2 * ball.velocity.length() * mpt * delta_time) {
+            for (int i = 0; i < mpt; i++) {
+                move(ball, delta_time);
+            }
+        } else {
+            if(isBottom) {
+                for (int i = 0; i < mpt; i++) {
+                    move(ball, delta_time);
+                    collide_with_arena_bot(ball, rules.arena);
+                }
+            } else {
+                for (int i = 0; i < mpt; i++) {
+                    move(ball, delta_time);
+                    collide_with_arena(ball, rules.arena);
+                }
+            }
+        }
+        if (Math.abs(ball.position.z) > rules.arena.depth / 2 + ball.radius) {
+            goal_scored(ball.position.z);
+        }
+    }
+
     public static void update(double delta_time, Rules rules, List<MyRobot> robots, MyBall ball) {
         Collections.shuffle(robots);
         for (MyRobot robot : robots) {
@@ -430,7 +504,7 @@ public class Simulator {
     }
 
     public static void tick(Rules rules, List<MyRobot> robots, MyBall ball, double microticksPerTick) {
-        double delta_time = 1.0 / microticksPerTick;
+        double delta_time = 1.0 / TICKS_PER_SECOND;
         for( int i = 0; i< microticksPerTick; i++) {
             update(delta_time / microticksPerTick, rules, robots, ball);
         }

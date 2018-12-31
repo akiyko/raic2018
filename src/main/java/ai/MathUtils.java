@@ -9,7 +9,7 @@ import java.util.Random;
  * @since 12/18/2018.
  */
 public abstract class MathUtils {
-    static Random r = new Random();
+    public static Random r = new Random();
 
     public static Vector3d MAX_VECTOR = Vector3d.of(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
 
