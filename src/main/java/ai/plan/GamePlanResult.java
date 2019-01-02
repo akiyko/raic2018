@@ -1,6 +1,7 @@
 package ai.plan;
 
 import ai.MathUtils;
+import ai.model.Position;
 import ai.model.Vector3d;
 
 /**
@@ -10,11 +11,14 @@ import ai.model.Vector3d;
 public class GamePlanResult {
    public int goalScoredTick = -1;
    public int oppGoalScored = -1;
+   public Position ballFinalPosition;
 
 //   public List<Position> robotPositions = new ArrayList<>();
 //   public List<Position> ballPositions = new ArrayList<>();
 
    public Vector3d minToBall = MathUtils.MAX_VECTOR;
+   public int minToBallTick = Integer.MAX_VALUE;
+
 
    public Vector3d minBallToOppGateCenter = MathUtils.MAX_VECTOR;
 
@@ -23,8 +27,10 @@ public class GamePlanResult {
       return "GamePlanResult{" +
               "goalScoredTick=" + goalScoredTick +
               ", oppGoalScored=" + oppGoalScored +
-              ", minToBall=" + minToBall.length() +
-              ", minToOppGateCenter=" + minBallToOppGateCenter.length() +
+              ", minToBall=" + minToBall +
+              ", minToBallTick=" + minToBallTick +
+              ", minBallToOppGateCenter=" + minBallToOppGateCenter +
+              ", ballGoalPosition=" + ballFinalPosition +
               '}';
    }
 }

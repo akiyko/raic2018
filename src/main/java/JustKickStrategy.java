@@ -49,7 +49,7 @@ public final class JustKickStrategy implements MyMyStrategy {
             Vector3d toBall = ball.position.minus(r.position);
             Vector3d flatPos = of(toBall.dx, 0, toBall.dz);
 
-            if(flatPos.length() < Constants.ROBOT_RADIUS + Constants.BALL_RADIUS - 0.2) {
+            if(flatPos.length() < Constants.ROBOT_RADIUS + Constants.BALL_RADIUS + 1) {
                 action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
             }
         }

@@ -11,9 +11,9 @@ public class Dan {
 
     public Dan(double distance, Vector3d normal) {
         DAN_COUNT ++;
-        if(distance < 0) {
-            System.out.println("I just want to be ensure that this is not a case");
-        }
+//        if(distance < 0) {
+//            System.out.println("I just want to be ensure that this is not a case");
+//        }
         this.distance = distance;
         this.normal = normal;
     }

@@ -60,6 +60,26 @@ public class TestUtils {
         return robot;
     }
 
+    public static MyRobot robotOnTheGround(Position startLocation) {
+        MyRobot robot = new MyRobot();
+
+        robot.velocity = of(0,0,0);
+        robot.position = startLocation;
+
+        robot.arena_e = Constants.ROBOT_ARENA_E;
+
+        robot.touch = false;
+        robot.radiusChangeSpeed = 0;
+
+        robot.mass = Constants.ROBOT_MASS;
+        robot.radius = Constants.ROBOT_RADIUS;
+
+        robot.touch_normal = of(0,1,0);
+        robot.touch = true;
+
+        return robot;
+    }
+
 
 
     public static MyBall ballInTheAir(Position startLocation) {
