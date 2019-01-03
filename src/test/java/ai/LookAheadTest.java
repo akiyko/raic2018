@@ -9,8 +9,10 @@ import org.junit.Test;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
+import static ai.LookAhead.robotMoveJumpGooalOptions;
 import static ai.TestUtils.ballInTheAir;
 import static ai.TestUtils.robotInTheAir;
 import static ai.model.Vector3d.of;
@@ -226,8 +228,6 @@ public class LookAheadTest {
         int steps = 80000;
         int ticks = 300;
         int mpt = 100;
-        double dangle = (maxAngle - minAngle) / steps;
-        double jumpSpeed = 15;
 
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall, ticks, mpt);
         long start = System.currentTimeMillis();
@@ -272,6 +272,57 @@ public class LookAheadTest {
         }
 
         System.out.println("Total: " + (System.currentTimeMillis() - start) + "ms");
+    }
+
+    @Test
+    public void testFindGoal() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        myBall.velocity = of(0, 0,0);
+
+        double jumpSpeed = 15;
+        int jumpTickOffset = -1;
+
+        long start = System.currentTimeMillis();
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, r1, bt, -Math.PI, Math.PI, 80, 3);
+        System.out.println(bmd);
+        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, r1, bt, bmd, 80, jumpSpeed, jumpTickOffset);
+
+        System.out.println("Total ball search: " + (System.currentTimeMillis() - start) + "ms");
+
+        if(!rmjp.isEmpty()) {
+            RobotMoveJumpPlan rmjplan = rmjp.get(0);
+            System.out.println(rmjplan);
+
+            //check same with simulate
+            for (int i = 1; i < 300; i++) {
+                try {
+                    Action action = new Action();
+                    if(i >= rmjplan.jumpTick) {
+                        action.jump_speed = rmjplan.jumpSpeed;
+                    }
+                    action.target_velocity = rmjplan.targetVelocity;
+                    r1.action = action;
+
+                    Simulator.tick(rules, Collections.singletonList(r1), myBall);
+
+                } catch (GoalScoredException e) {
+                    System.out.println("Goal at " + i + ", pos: " + myBall.position);
+                    break;
+
+                }
+
+            }
+
+
+        } else {
+            //no goals :(
+        }
+
+
+
     }
 
     @Test

@@ -4,6 +4,8 @@ import ai.model.Vector3d;
 
 import java.util.Random;
 
+import static ai.model.Vector3d.of;
+
 /**
  * @author akiyko
  * @since 12/18/2018.
@@ -44,5 +46,12 @@ public abstract class MathUtils {
         return (vy0 + Math.sqrt(d)) / Constants.GRAVITY;
     }
 
+
+    public static Vector3d robotGroundVelocity(double angle) {
+        double x = Math.cos(angle);
+        double z = Math.sin(angle);
+
+        return of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+    }
 
 }

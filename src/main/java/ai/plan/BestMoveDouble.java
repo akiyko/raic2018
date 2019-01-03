@@ -1,6 +1,7 @@
 package ai.plan;
 
 import ai.Constants;
+import ai.MathUtils;
 import ai.model.Vector3d;
 
 import static ai.model.Vector3d.of;
@@ -20,13 +21,7 @@ public class BestMoveDouble {
 
 
     public Vector3d middleTargetVelocityAngleGround() {
-        double angle = (low + hi) * 0.5;
-
-        double x = Math.cos(angle);
-        double z = Math.sin(angle);
-
-        return of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
-
+        return MathUtils.robotGroundVelocity((low + hi) * 0.5);
     }
 
     @Override

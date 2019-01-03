@@ -6,6 +6,7 @@ import model.Action;
 import model.Arena;
 import model.Rules;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -97,6 +98,68 @@ public class LookAhead {
 
 //    public static List<String> robotGroundMoveJumpGoal
 
+//    public static List<RobotMoveJumpPlan> robotMoveJumpGooalOptions(Rules rules, MyRobot myRobot,
+//                                                                    BallTrace ballTrace,
+//                                                                    long stepsSeek,
+//                                                                    long stepsGoal,
+//                                                                    double jumpSpeed,
+//                                                                    int jumpTickOffset) {
+//
+//
+//    }
+
+        /**
+         * @param rules
+         * @param myRobot
+         * @param ballTrace
+         * @param seekForBallGroundResult
+         * @param steps
+         * @param jumpTickOffset           0 mens jump on seekForBallGroundResult.minToballTick, -2 means jump 2 ticks before 'touch'
+         * @return
+         */
+    public static List<RobotMoveJumpPlan> robotMoveJumpGooalOptions(Rules rules, MyRobot myRobot,
+                                                             BallTrace ballTrace,
+                                                             BestMoveDouble seekForBallGroundResult, long steps,
+                                                             double jumpSpeed,
+                                                             int jumpTickOffset) {
+        List<RobotMoveJumpPlan> result = new ArrayList<>();
+
+        //start from center, move to sides
+
+        double delta = 0.5 * (seekForBallGroundResult.hi - seekForBallGroundResult.low) / steps;
+
+        double mid = (seekForBallGroundResult.hi + seekForBallGroundResult.low) * 0.5;
+
+        int jumpTick = Math.min(seekForBallGroundResult.lowPlanResult.minToBallGroundTick,
+                seekForBallGroundResult.lowPlanResult.minToBallGroundTick) + jumpTickOffset;
+
+        for (int i = 0; i < steps; i++) {
+            double mul = (i % 2 == 0) ? 1.0 : -1.0;
+            double angle = mid + delta * mul * i;
+
+            Vector3d targetVelocity = MathUtils.robotGroundVelocity(angle);
+
+            GamePlanResult gpr = predictRobotBallFutureMath(rules, ballTrace, myRobot.clone(), targetVelocity,
+                    jumpTick, jumpSpeed, Constants.MICROTICKS_PER_TICK);
+
+            if(gpr.goalScoredTick > 0) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = jumpSpeed;
+                rmjp.jumpTick = jumpTick;
+                rmjp.targetVelocity = targetVelocity;
+
+                result.add(rmjp);
+
+                if(result.size() > 1) {
+                    //TODO: temporary, find only first goal
+
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
     public static BestMoveDouble robotSeekForBallOnGround(Rules rules, MyRobot myRobot,
                                                           BallTrace ballTrace,
@@ -114,10 +177,9 @@ public class LookAhead {
         MyRobot mr = myRobot.clone();
 
         for (int i = 0; i <= steps; i++) {
-            double x = Math.cos(minAngle + dangle * i);
-            double z = Math.sin(minAngle + dangle * i);
+            double angle = minAngle + dangle * i;
 
-            Vector3d targetVelocity = of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+            Vector3d targetVelocity = MathUtils.robotGroundVelocity(angle);
 
             GamePlanResult res = predictRobotBallFutureMath(rules, ballTrace, mr.clone(), targetVelocity,
                     ballTrace.ballTrace.size() + 1, 0, Constants.MICROTICKS_PER_TICK);
@@ -149,34 +211,34 @@ public class LookAhead {
 
         int beforeTouchTick = -1;
 
-        for (int i = 0; i < ballTrace.ballTrace.size(); i++) {
+        for (int i = 1; i < ballTrace.ballTrace.size(); i++) {
             MyBall thisTickBall = ballTrace.ballTrace.get(i);
 
-            MyRobot mr = robotGroundMoveAndJump(myRobot.clone(), targetVelocity, i + 1, jumpTick, jumpSpeed);
+            MyRobot mr = robotGroundMoveAndJump(myRobot.clone(), targetVelocity, i, jumpTick, jumpSpeed);
 
             Vector3d toBall = thisTickBall.position.minus(mr.position);
             if (toBall.lengthSquare() < result.minToBall.lengthSquare()) {
                 result.minToBall = toBall;
-                result.minToBallTick = i + 1;
+                result.minToBallTick = i;
             }
             Vector3d toBallGround = toBall.zeroY();
             if (toBallGround.lengthSquare() < result.minToBallGround.lengthSquare()) {
                 result.minToBallGround = toBallGround;
-                result.minToBallGroundTick = i + 1;
+                result.minToBallGroundTick = i;
             }
 
             double dr = (ROBOT_MAX_RADIUS - ROBOT_MIN_RADIUS) * jumpSpeed / ROBOT_MAX_JUMP_SPEED;
 
             if (toBall.length() < myRobot.radius + thisTickBall.radius + dr) {
                 //touch
-                beforeTouchTick = i;
+                beforeTouchTick = i - 1;
                 result.beforeBallTouchTick = beforeTouchTick;
                 break;
             }
         }
 
         if (beforeTouchTick > 0 && jumpTick <= beforeTouchTick) {
-            MyBall b = ballTrace.ballTrace.get(beforeTouchTick - 1).clone();
+            MyBall b = ballTrace.ballTrace.get(beforeTouchTick).clone();
             MyRobot mr = robotGroundMoveAndJump(myRobot.clone(), targetVelocity, beforeTouchTick, jumpTick, jumpSpeed);
             mr.action = new Action();
             mr.action.jump_speed = jumpSpeed;
@@ -356,6 +418,7 @@ public class LookAhead {
 
         BallTrace bt = new BallTrace();
 
+        bt.ballTrace.add(myBall.clone());
         int i = 0;
         try {
             for (; i < tickDepth; i++) {
@@ -378,6 +441,7 @@ public class LookAhead {
 
         BallTrace bt = new BallTrace();
 
+        bt.ballTrace.add(myBall.clone());
         int i = 0;
         try {
             for (; i < tickDepth; i++) {
