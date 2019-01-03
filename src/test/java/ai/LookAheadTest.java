@@ -7,6 +7,7 @@ import model.Arena;
 import model.Rules;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
@@ -214,9 +215,35 @@ public class LookAheadTest {
     }
 
     @Test
-    public void testKickFirstMath() throws Exception {
-        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-20, 1.0, -35));
+    public void testGroundBallFindMath() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+//        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
         MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, 0));
+
+
+        double minAngle = -Math.PI;
+        double maxAngle = Math.PI;
+        int steps = 80000;
+        int ticks = 300;
+        int mpt = 100;
+        double dangle = (maxAngle - minAngle) / steps;
+        double jumpSpeed = 15;
+
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall, ticks, mpt);
+        long start = System.currentTimeMillis();
+
+        BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, r1, bt, -Math.PI, Math.PI, steps, 3);
+
+        System.out.println( bmd);
+
+        System.out.println("Total: " + (System.currentTimeMillis() - start) + "ms");
+    }
+
+    @Test
+    public void testKickFirstMath() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+//        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -20));
 
 
         double minAngle = -Math.PI;
@@ -236,19 +263,100 @@ public class LookAheadTest {
             Vector3d targetVelo = of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
 
 
+            GamePlanResult gmp = LookAhead.predictRobotBallFutureMath(rules, bt, r1, targetVelo, 32, jumpSpeed, mpt);
 
-            GamePlanResult gmp = LookAhead.predictRobotBallFutureMath(rules, bt, r1, targetVelo, 86, jumpSpeed, mpt);
-
-            if(gmp.minToBall.length() < 3.1 && gmp.goalScoredTick > 0) {
+            if(gmp.minToBall.length() < 3.1  /* gmp.goalScoredTick > 0*/) {
                 System.out.println(i + ": " + x + "/" + z + gmp);
             }
 
         }
 
         System.out.println("Total: " + (System.currentTimeMillis() - start) + "ms");
+    }
+
+    @Test
+    public void testGoalSimulate() throws Exception {
+//        53088: 0.5165931063274437/0.8562310216845466GamePlanResult{goalScoredTick=144, oppGoalScored=-1, minToBall={dx=0.3694619595571389, dy=1.187908630000209, dz=2.4632211759872256}, minToBallTick=85, minBallToOppGateCenter={dx=9.223372036854776E18, dy=9.223372036854776E18, dz=9.223372036854776E18}, ballFinalPosition={x=8.495376713949636, y=2.2122067135335257, z=42.0}, beforeTouchTick=84}
+//        53089: 0.5165258565070227/0.8562715921713663GamePlanResult{goalScoredTick=144, oppGoalScored=-1, minToBall={dx=0.37201745273313946, dy=1.187908630000209, dz=2.4616794974880847}, minToBallTick=85, minBallToOppGateCenter={dx=9.223372036854776E18, dy=9.223372036854776E18, dz=9.223372036854776E18}, ballFinalPosition={x=8.564028955330194, y=2.236547847395073, z=42.0}, beforeTouchTick=84}
+
+        int jumpTick = 96;
+
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+        MyRobot r1_0 = r1.clone();
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, 0));
+
+//        59896: 0.00816805007191672/0.9999666409225973GamePlanResult{goalScoredTick=137, oppGoalScored=-1, minToBall={dx=-0.363478228200294, dy=0.5282059135834578, dz=2.501484478944416}, minToBallTick=98, minBallToOppGateCenter={dx=9.223372036854776E18, dy=9.223372036854776E18, dz=9.223372036854776E18}, ballFinalPosition={x=-3.6838100012816413, y=2.023014241818273, z=42.0}, beforeTouchTick=97}
+
+        Vector3d targetVelo = of(0.00816805007191672, 0, 0.9999666409225973).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+        GamePlanResult gmp = LookAhead.predictRobotBallFutureMath(rules, bt, r1, targetVelo, jumpTick + 1, 15, 100);
+
+        for (int i = 0; i < 150; i++) {
+            try {
+                Action action = new Action();
+                if(i >= jumpTick) {
+                    action.jump_speed = 15;
+                }
+                action.target_velocity = targetVelo;
+                r1.action = action;
+
+                Simulator.tick(rules, Collections.singletonList(r1), myBall);
+
+
+                System.out.println(i + "==============");
+                MyRobot rapprox = LookAhead.robotGroundMoveAndJump(r1_0, targetVelo, i + 1, jumpTick + 1, 15);
+                System.out.println(rapprox);
+                System.out.println(r1);
+
+                System.out.println(i + ":Ball :" + myBall);
+                System.out.println(i + ":Ball Pos Diff:" + myBall.position.minus(bt.ballTrace.get(i).position).length());
+                System.out.println(i + ":Rob pos diff:" + r1.position.minus(rapprox.position).length());
+                System.out.println(i + ":Rob Velo diff:" + r1.velocity.minus(rapprox.velocity).length());
+
+//                Ball before call sim:MyBall{p={x=0.0, y=2.212034213333523, z=0.0}, v={dx=0.0, dy=-1.1975349999998215, dz=0.0}} beforeTouchTick: 84
+//                Ball after col sim:MyBall{p={x=0.13572315494419418, y=2.388330332298954, z=0.6405033872765454}, v={dx=8.946372727291507, dy=11.513528743250749, dz=42.219634800154836}}
+
+
+//                if(r1.position.minus(myBall.position).length() < 4) {
+//                    System.out.println(i + ": len = " + r1.position.minus(myBall.position).length());
+//                    System.out.println("ball:" + myBall);
+//                }
+            } catch (GoalScoredException e) {
+                System.out.println("Goal at " + i + ", pos: " + myBall.position);
+                break;
+
+            }
+        }
 
     }
 
+    @Test
+    public void ballFlyWhat() throws Exception {
+        System.out.println(MathUtils.whenHitGround(2.388330332298954, 11.513528743250749) * 60);
+//        MyBall mb = TestUtils.ballInTheAir(new Position(0.13570986826334336, 2.389343734592452, 0.6413302779300499));
+//        mb.velocity = of(8.932707744799497, 11.561345447617931, 42.21370202440609);
+        MyBall mb = TestUtils.ballInTheAir(new Position(0.13572315494419418, 2.388330332298954, 0.6405033872765454));
+        mb.velocity = of(8.946372727291507, 11.513528743250749, 42.219634800154836);
+        MyBall mbcopy = mb.clone();
+
+        for (int i = 1; i < 160; i++) {
+
+            try {
+                Simulator.tick(rules, Collections.emptyList(), mb);
+                System.out.println(i + "Ball:" + mb);
+                System.out.println(i + "Math:" + LookAhead.ballPositionFly(mbcopy, i / Constants.TICKS_PER_SECOND));
+            } catch(GoalScoredException e) {
+                System.out.println("Goals scored at: " + i);
+                break;
+            }
+        }
+
+
+        BallGoal bg = LookAhead.ballFlyUntouched(rules, mbcopy);
+        System.out.println(bg);
+
+    }
 
     @Test
     public void testKickFirstLahStraight() throws Exception {

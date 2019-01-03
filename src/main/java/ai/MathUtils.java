@@ -35,4 +35,14 @@ public abstract class MathUtils {
         return v;
     }
 
+
+    public static double whenHitGround(double y0, double vy0) {
+        double d = vy0 * vy0 - 2 * Constants.GRAVITY * (Constants.BALL_RADIUS - y0);
+        if(d < 0) {
+            return -1;
+        }
+        return (vy0 + Math.sqrt(d)) / Constants.GRAVITY;
+    }
+
+
 }

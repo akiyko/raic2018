@@ -37,4 +37,12 @@ public class MyBall extends Entity implements Cloneable {
     public MyBall cloneNegateZ() {
         return (MyBall) super.cloneNegateZ();
     }
+
+    @Override
+    public String toString() {
+        return "MyBall{" +
+                "p=" + position +
+                ", v=" + velocity +
+                '}';
+    }
 }

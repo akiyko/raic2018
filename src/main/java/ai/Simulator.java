@@ -32,7 +32,8 @@ public class Simulator {
             b.position = b.position.plus(normal.multiply(penetration * k_b));
             double delta_velocity = dot(b.velocity.minus(a.velocity), normal) + b.radiusChangeSpeed - a.radiusChangeSpeed;
             if (delta_velocity < 0) {
-                Vector3d impulse = normal.multiply((1 + random(MIN_HIT_E, MAX_HIT_E)) * delta_velocity);
+//                Vector3d impulse = normal.multiply((1 + random(MIN_HIT_E, MAX_HIT_E)) * delta_velocity); //TODO: testing
+                Vector3d impulse = normal.multiply((1 + 0.5 *(MIN_HIT_E + MAX_HIT_E)) * delta_velocity);
                 a.velocity = a.velocity.plus(impulse.multiply(k_a));
                 b.velocity = b.velocity.minus(impulse.multiply(k_b));
             }

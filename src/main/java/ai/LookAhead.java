@@ -7,6 +7,7 @@ import model.Arena;
 import model.Rules;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static ai.Constants.*;
@@ -94,6 +95,53 @@ public class LookAhead {
 ////      System.out.println("x/z: " + x + "/"  + z);
 //    }
 
+//    public static List<String> robotGroundMoveJumpGoal
+
+
+    public static BestMoveDouble robotSeekForBallOnGround(Rules rules, MyRobot myRobot,
+                                                          BallTrace ballTrace,
+                                                          double minAngle, double maxAngle, long steps,
+                                                          double minLenToBallRequired) {
+
+        double dangle = (maxAngle - minAngle) / steps;
+
+        Optional<Double> minAngleConditionMatched = Optional.empty();
+        Optional<Double> maxAngleConditionMatched = Optional.empty();
+        GamePlanResult low = null;
+        GamePlanResult high = null;
+
+
+        MyRobot mr = myRobot.clone();
+
+        for (int i = 0; i <= steps; i++) {
+            double x = Math.cos(minAngle + dangle * i);
+            double z = Math.sin(minAngle + dangle * i);
+
+            Vector3d targetVelocity = of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+
+            GamePlanResult res = predictRobotBallFutureMath(rules, ballTrace, mr.clone(), targetVelocity,
+                    ballTrace.ballTrace.size() + 1, 0, Constants.MICROTICKS_PER_TICK);
+
+//                System.out.println(i + ": " + res.minToBall.length());
+            if (res.minToBallGround.length() < minLenToBallRequired) {
+                if (!minAngleConditionMatched.isPresent()) {
+                    minAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                    low = res;
+                }
+                maxAngleConditionMatched = Optional.of(minAngle + dangle * i);
+                high = res;
+            }
+        }
+
+        BestMoveDouble bestMove = new BestMoveDouble();
+        bestMove.lowPlanResult = low;
+        bestMove.low = minAngleConditionMatched.orElse(0.0);
+
+        bestMove.hiPlanResult = high;
+        bestMove.hi = maxAngleConditionMatched.orElse(0.0);
+
+        return bestMove;
+    }
 
     public static GamePlanResult predictRobotBallFutureMath(Rules rules, BallTrace ballTrace, MyRobot myRobot, Vector3d targetVelocity,
                                                             int jumpTick, double jumpSpeed, double mpt) {
@@ -111,29 +159,40 @@ public class LookAhead {
                 result.minToBall = toBall;
                 result.minToBallTick = i + 1;
             }
+            Vector3d toBallGround = toBall.zeroY();
+            if (toBallGround.lengthSquare() < result.minToBallGround.lengthSquare()) {
+                result.minToBallGround = toBallGround;
+                result.minToBallGroundTick = i + 1;
+            }
 
-            if (toBall.lengthSquare() < myRobot.radius + thisTickBall.radius) {
+            double dr = (ROBOT_MAX_RADIUS - ROBOT_MIN_RADIUS) * jumpSpeed / ROBOT_MAX_JUMP_SPEED;
+
+            if (toBall.length() < myRobot.radius + thisTickBall.radius + dr) {
                 //touch
                 beforeTouchTick = i;
+                result.beforeBallTouchTick = beforeTouchTick;
                 break;
             }
         }
 
-        if(beforeTouchTick > 0) {
+        if (beforeTouchTick > 0 && jumpTick <= beforeTouchTick) {
             MyBall b = ballTrace.ballTrace.get(beforeTouchTick - 1).clone();
-            MyRobot mr =  robotGroundMoveAndJump(myRobot.clone(), targetVelocity, beforeTouchTick, jumpTick, jumpSpeed);
+            MyRobot mr = robotGroundMoveAndJump(myRobot.clone(), targetVelocity, beforeTouchTick, jumpTick, jumpSpeed);
             mr.action = new Action();
             mr.action.jump_speed = jumpSpeed;
             mr.action.target_velocity = targetVelocity;
 
+//            System.out.println("Ball before call sim:" + b + " beforeTouchTick: " + beforeTouchTick);
             Simulator.tick(rules, Collections.singletonList(mr), b, mpt);
+
+//            System.out.println("Ball after col sim:" +  b);
 
             BallGoal bg = LookAhead.ballFlyUntouched(rules, b);
             result.ballFinalPosition = bg.finalPosition;
-            if(bg.goalScoredTick > 0) {
+            if (bg.goalScoredTick > 0) {
                 result.goalScoredTick = (int) bg.goalScoredTick + beforeTouchTick + 1;
             }
-            if(bg.oppGoalScoredTick > 0) {
+            if (bg.oppGoalScoredTick > 0) {
                 result.oppGoalScored = (int) bg.oppGoalScoredTick + beforeTouchTick + 1;
             }
         }
@@ -241,6 +300,37 @@ public class LookAhead {
     }
 
     public static Position ballPositionFly(MyBall mb, double t) {
+
+        Position flyPosition = ballPositionFlyJust(mb, t);
+        if (flyPosition.y < Constants.BALL_RADIUS) {
+            //do bounce once
+            double firstBounceTime = MathUtils.whenHitGround(mb.position.y, mb.velocity.dy);
+            if (firstBounceTime < 0) {
+                return flyPosition;
+            }
+
+            double afterBounceTime = t - firstBounceTime;
+
+            Position bouncePosition = ballPositionFlyJust(mb, firstBounceTime);
+            double vyBeforeBounce = mb.velocity.dy - firstBounceTime * GRAVITY;
+
+            double vyfterBounce = -vyBeforeBounce * BALL_ARENA_E;
+
+            MyBall bounceBall = mb.clone();
+            bounceBall.position = bouncePosition;
+            bounceBall.velocity = of(mb.velocity.dx, vyfterBounce, mb.velocity.dz);
+
+            Position second = ballPositionFlyJust(bounceBall, afterBounceTime);
+
+            return second;
+
+        } else {
+            return flyPosition;
+        }
+    }
+
+
+    public static Position ballPositionFlyJust(MyBall mb, double t) {
         double x = mb.position.x + t * mb.velocity.dx;
         double z = mb.position.z + t * mb.velocity.dz;
         double y = mb.position.y + t * mb.velocity.dy - 0.5 * Constants.GRAVITY * t * t;

@@ -4,7 +4,7 @@ import static ai.Constants.DOUBLE_ZERO;
 
 /**
  * immutable
- *
+ * <p>
  * By no one on 18.12.2018.
  */
 public final class Vector3d {
@@ -16,6 +16,10 @@ public final class Vector3d {
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
+    }
+
+    public Vector3d zeroY() {
+        return of(dx, 0, dz);
     }
 
     public static Vector3d of(double dx, double dy, double dz) {
@@ -36,7 +40,7 @@ public final class Vector3d {
 
     public Vector3d clamp(double max) {
         double len = length();
-        if(len > max) {
+        if (len > max) {
             return this.multiply(max / len);
         } else {
             return this;

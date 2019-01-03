@@ -11,6 +11,8 @@ import ai.model.Vector3d;
 public class GamePlanResult {
    public int goalScoredTick = -1;
    public int oppGoalScored = -1;
+   public int beforeBallTouchTick = -1;
+
    public Position ballFinalPosition;
 
 //   public List<Position> robotPositions = new ArrayList<>();
@@ -18,6 +20,9 @@ public class GamePlanResult {
 
    public Vector3d minToBall = MathUtils.MAX_VECTOR;
    public int minToBallTick = Integer.MAX_VALUE;
+
+   public Vector3d minToBallGround = MathUtils.MAX_VECTOR;
+   public int minToBallGroundTick = Integer.MAX_VALUE;
 
 
    public Vector3d minBallToOppGateCenter = MathUtils.MAX_VECTOR;
@@ -30,7 +35,9 @@ public class GamePlanResult {
               ", minToBall=" + minToBall +
               ", minToBallTick=" + minToBallTick +
               ", minBallToOppGateCenter=" + minBallToOppGateCenter +
-              ", ballGoalPosition=" + ballFinalPosition +
+              ", ballFinalPosition=" + ballFinalPosition +
+              ", beforeTouchTick=" + beforeBallTouchTick +
+              ", minToBallGroundTick=" + minToBallGroundTick +
               '}';
    }
 }

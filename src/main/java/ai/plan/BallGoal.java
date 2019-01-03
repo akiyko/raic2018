@@ -12,8 +12,12 @@ public class BallGoal {
     public Position finalPosition;
 
 
-
-
-
-
+    @Override
+    public String toString() {
+        return "BallGoal{" +
+                "goalScoredTick=" + goalScoredTick +
+                ", oppGoalScoredTick=" + oppGoalScoredTick +
+                ", finalPosition=" + finalPosition +
+                '}';
+    }
 }
