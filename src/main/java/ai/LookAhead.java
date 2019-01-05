@@ -108,6 +108,37 @@ public class LookAhead {
 //
 //    }
 
+    public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, MyRobot myRobot,
+                                                                   BallTrace ballTrace) {
+
+        int seekSteps = 80;
+        int goalSteps = 80;
+        int ticksOffsetMin = -4;
+        int ticksOffsetStart = 0;
+        double jumpSpeed = Constants.ROBOT_MAX_JUMP_SPEED;
+
+        double minLenToBallGround = Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS;
+
+        BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, myRobot.clone(), ballTrace,
+                -Math.PI, Math.PI, seekSteps, minLenToBallGround);
+
+        if(bmd.low == 0.0 && bmd.hi == 0.0) {//can't touch ball
+            return Collections.emptyList();
+        }
+
+        for (int tickOffest = ticksOffsetStart; tickOffest >= ticksOffsetMin; tickOffest--) {
+            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, myRobot.clone(), ballTrace, bmd,
+                    goalSteps, jumpSpeed, tickOffest);
+
+            if(!rmjp.isEmpty()) {
+                return rmjp;
+            }
+        }
+
+        return Collections.emptyList();
+
+    }
+
         /**
          * @param rules
          * @param myRobot
@@ -131,7 +162,7 @@ public class LookAhead {
         double mid = (seekForBallGroundResult.hi + seekForBallGroundResult.low) * 0.5;
 
         int jumpTick = Math.min(seekForBallGroundResult.lowPlanResult.minToBallGroundTick,
-                seekForBallGroundResult.lowPlanResult.minToBallGroundTick) + jumpTickOffset;
+                seekForBallGroundResult.hiPlanResult.minToBallGroundTick) + jumpTickOffset;
 
         for (int i = 0; i < steps; i++) {
             double mul = (i % 2 == 0) ? 1.0 : -1.0;
@@ -245,7 +276,11 @@ public class LookAhead {
             mr.action.target_velocity = targetVelocity;
 
 //            System.out.println("Ball before call sim:" + b + " beforeTouchTick: " + beforeTouchTick);
-            Simulator.tick(rules, Collections.singletonList(mr), b, mpt);
+            try {
+                Simulator.tick(rules, Collections.singletonList(mr), b, mpt);
+            } catch (GoalScoredException e) {
+                return new GamePlanResult();
+            }
 
 //            System.out.println("Ball after col sim:" +  b);
 
@@ -264,6 +299,10 @@ public class LookAhead {
 
 
     public static MyRobot robotGroundMoveAndJump(MyRobot mr, Vector3d targetVelocity, int ticks, int jumpTick, double jumpSpeed) {
+        if(ticks == 0) {
+            return  mr;
+        }
+
         if (jumpTick > ticks) {
             return robotGroundMove(mr, targetVelocity, ticks);
         }

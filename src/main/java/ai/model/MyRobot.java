@@ -48,7 +48,9 @@ public class MyRobot extends Entity {
         mr.velocity = of(r.velocity_x, r.velocity_y, r.velocity_z);
         mr.position = new Position(r.x, r.y, r.z);
         mr.touch = r.touch;
-        mr.touch_normal = of(r.touch_normal_x, r.touch_normal_y, r.touch_normal_z);
+        if(r.touch_normal_x != null && r.touch_normal_y != null && r.touch_normal_z != null) {
+            mr.touch_normal = of(r.touch_normal_x, r.touch_normal_y, r.touch_normal_z);
+        }
 
         mr.radius = r.radius;
 

@@ -52,7 +52,7 @@ public final class SingleKickStrategy implements MyMyStrategy {
 
 
     @Override
-    public void act(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena) {
+    public void act(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena, int ct) {
 //        myRobots.values().forEach(r -> {
 //            act(r, ball, arena);
 //        });
@@ -63,5 +63,10 @@ public final class SingleKickStrategy implements MyMyStrategy {
         nop.target_velocity = of(0,0,0);
         myRobots.get(1).action = nop;
         myRobots.get(0).action = nop;
+    }
+
+    @Override
+    public void setRules(Rules rules) {
+
     }
 }

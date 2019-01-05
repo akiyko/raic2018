@@ -2,6 +2,7 @@ import ai.model.MyBall;
 import ai.model.MyRobot;
 import model.Action;
 import model.Arena;
+import model.Rules;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +16,13 @@ public abstract class MyMyStrategyAbstract {
     public Map<Integer, Action> previousTickAction = new HashMap<>();
     public int lastTickProcessed = -1;
 
-    public abstract void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena);
+    public abstract void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules);
 
-    public void computeTick(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena) {
-        computeTickLogic(tickNumber, myRobots, opponentRobots, ball, arena);
+    public final void computeTick(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules) {
+        long start = System.currentTimeMillis();
+        computeTickLogic(tickNumber, myRobots, opponentRobots, ball, rules);
+
+        System.out.println("Tick took:" + (System.currentTimeMillis() - start) + "ms");
 
         previousTickAction.putAll(thisTickActions);
     }

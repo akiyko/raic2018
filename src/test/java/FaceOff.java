@@ -5,10 +5,7 @@ import ai.TestUtils;
 import ai.model.MyBall;
 import ai.model.MyRobot;
 import ai.model.Position;
-import model.Arena;
-import model.Game;
-import model.Robot;
-import model.Rules;
+import model.*;
 
 import java.util.*;
 
@@ -23,10 +20,14 @@ public class FaceOff {
     private MyMyStrategy opponentStrategy;
 
     private Arena arena = TestUtils.standardArena();
+    private Rules rules = TestUtils.standardRules();
 
     public FaceOff(MyMyStrategy myStrategy, MyMyStrategy opponentStrategy) {
         this.myStrategy = myStrategy;
         this.opponentStrategy = opponentStrategy;
+
+        myStrategy.setRules(rules);
+        opponentStrategy.setRules(rules);
     }
 
     public void simulate() {
@@ -49,6 +50,7 @@ public class FaceOff {
         boolean gamestart = true;
 
         for (int i = 0; i < GAME_TICKS; i++) {
+            System.out.println("TICK " + i + " ============================================");
             if(gamestart) {
                 robots = new ArrayList<>();
                 myrobots = myRobots();
@@ -69,8 +71,13 @@ public class FaceOff {
             Map<Integer, MyRobot> myRobotMapNegateZ = toMapCloneNegateZ(myrobots);
             Map<Integer, MyRobot> oppRobMapNegateZ = toMapCloneNegateZ(opprobots);
 
-            myStrategy.act(myRobotMap, oppRobMap, myBall, arena);
-            opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena);
+            myStrategy.act(myRobotMap, oppRobMap, myBall, arena, i);
+            opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena, i);
+
+            myRobotMap.forEach((id, mr) -> {
+                System.out.println(id +  "-> " + mr.action);
+            });
+
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
                 myrobots.get(entry.getKey()).action = entry.getValue().action;
@@ -84,13 +91,15 @@ public class FaceOff {
             try {
                 System.out.println(robots);
                 Simulator.tick(rules, robots, myBall);
+
+                robots.forEach(r -> r.action = new Action());
                 System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
-//                    System.out.println("Goal scored for me at tick " + i);
+                    System.out.println("Goal scored for me at tick " + i);
                     myGoals ++;
                 } else {
-//                    System.out.println("Goal scored for opponent at tick " + i);
+                    System.out.println("Goal scored for opponent at tick " + i);
                     oppGoals ++;
                 }
 
@@ -125,14 +134,19 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
-//        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, -30));
-        return Arrays.asList(r1/*,r2*/);
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
+        r1.id = 0;
+        r2.id = 1;
+        return Arrays.asList(r1,r2);
     }
 
     public static List<MyRobot> oppRobots() {
         MyRobot r1 = TestUtils.robotInTheAir(new Position(-17, 2, 35));
         MyRobot r2 = TestUtils.robotInTheAir(new Position(17, 2, 35));
+        r1.id = 3;
+        r2.id = 4;
+
         return Arrays.asList(r1,r2);
     }
 

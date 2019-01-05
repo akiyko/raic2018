@@ -278,6 +278,47 @@ public class LookAheadTest {
     public void testFindGoal() throws Exception {
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
         MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        myBall.velocity = of(-10, 0,0);
+
+        long start = System.currentTimeMillis();
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt);
+
+        System.out.println("Total rmjp: " + (System.currentTimeMillis() - start) + "ms");
+
+        if(!rmjp.isEmpty()) {
+            RobotMoveJumpPlan rmjplan = rmjp.get(0);
+            System.out.println(rmjplan);
+
+            //check same with simulate
+            for (int i = 1; i < 300; i++) {
+                try {
+                    Action action = new Action();
+                    if(i >= rmjplan.jumpTick) {
+                        action.jump_speed = rmjplan.jumpSpeed;
+                    }
+                    action.target_velocity = rmjplan.targetVelocity;
+                    r1.action = action;
+
+                    Simulator.tick(rules, Collections.singletonList(r1), myBall);
+
+                } catch (GoalScoredException e) {
+                    System.out.println("Goal at " + i + ", pos: " + myBall.position);
+                    break;
+
+                }
+            }
+
+        } else {
+            //no goals :(
+        }
+    }
+
+    @Test
+    public void testFindGoalSeekFirst() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
         myBall.velocity = of(0, 0,0);
 
         double jumpSpeed = 15;
@@ -288,7 +329,7 @@ public class LookAheadTest {
 
         BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, r1, bt, -Math.PI, Math.PI, 80, 3);
         System.out.println(bmd);
-        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, r1, bt, bmd, 80, jumpSpeed, jumpTickOffset);
+        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, r1, bt, bmd, 40, jumpSpeed, jumpTickOffset);
 
         System.out.println("Total ball search: " + (System.currentTimeMillis() - start) + "ms");
 
@@ -320,9 +361,6 @@ public class LookAheadTest {
         } else {
             //no goals :(
         }
-
-
-
     }
 
     @Test

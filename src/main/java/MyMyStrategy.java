@@ -1,6 +1,7 @@
 import ai.model.MyBall;
 import ai.model.MyRobot;
 import model.Arena;
+import model.Rules;
 
 import java.util.Map;
 
@@ -11,5 +12,7 @@ import java.util.Map;
 public interface MyMyStrategy {
     //sets action to every myRobot
     //id -> robot
-    void act(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena);
+    void act(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena, int currentTick);
+
+    void setRules(Rules rules);
 }

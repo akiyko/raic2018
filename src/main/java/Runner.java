@@ -18,8 +18,8 @@ public final class Runner {
     }
 
     public void run() throws IOException {
-        Strategy strategy = new MyStrategy();
-//        Strategy strategy = new StrategyWrapper(new SingleKickGoalLahStrategy());
+//        Strategy strategy = new MyStrategy();
+        Strategy strategy = new StrategyWrapper(new SingleKickGoalLahStrategy());
         Map<Integer, Action> actions = new HashMap<>();
         Game game;
         remoteProcessClient.writeToken(token);
@@ -31,6 +31,9 @@ public final class Runner {
                     Action action = new Action();
                     strategy.act(robot, rules, game, action);
                     actions.put(robot.id, action);
+
+                    System.out.println("==============");
+                    System.out.println(robot.id + ": " + action);
                 }
             }
             remoteProcessClient.write(actions, strategy.customRendering());
