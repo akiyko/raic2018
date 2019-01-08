@@ -24,8 +24,11 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
 
     Rules rules;
 
+
+
     Map<Integer, JumpCommand> jumpTick = new HashMap<>();//when touch floor - unset this
     Map<Integer, RobotMoveJumpPlan> thisTickPlans = new HashMap<>();//when touch floor - unset this
+    Map<Integer, RobotMoveJumpPlan> previousTickPlans = new HashMap<>();
 
     @Override
     public void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules) {
@@ -38,6 +41,9 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
         myRobots.forEach((id, mr) -> {
             thisTickActions.put(id, mr.action);
         });
+
+        previousTickPlans.clear();
+        previousTickPlans.putAll(thisTickPlans);
     }
 
     @Override

@@ -108,6 +108,24 @@ public class LookAhead {
 //
 //    }
 
+    public static Optional<RobotMoveJumpPlan> robotMoveJumpGoalOptionsCheckPreviousAndAdjust(
+            RobotMoveJumpPlan previous,
+            Rules rules, MyRobot myRobot,
+            BallTrace ballTrace) {
+
+
+
+            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, myRobot.clone(), ballTrace, bmd,
+                    goalSteps, jumpSpeed, tickOffest);
+
+            if (!rmjp.isEmpty()) {
+                return rmjp;
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
     public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, MyRobot myRobot,
                                                                    BallTrace ballTrace) {
 
@@ -122,7 +140,7 @@ public class LookAhead {
         BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, myRobot.clone(), ballTrace,
                 -Math.PI, Math.PI, seekSteps, minLenToBallGround);
 
-        if(bmd.low == 0.0 && bmd.hi == 0.0) {//can't touch ball
+        if (bmd.low == 0.0 && bmd.hi == 0.0) {//can't touch ball
             return Collections.emptyList();
         }
 
@@ -130,29 +148,28 @@ public class LookAhead {
             List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, myRobot.clone(), ballTrace, bmd,
                     goalSteps, jumpSpeed, tickOffest);
 
-            if(!rmjp.isEmpty()) {
+            if (!rmjp.isEmpty()) {
                 return rmjp;
             }
         }
 
         return Collections.emptyList();
-
     }
 
-        /**
-         * @param rules
-         * @param myRobot
-         * @param ballTrace
-         * @param seekForBallGroundResult
-         * @param steps
-         * @param jumpTickOffset           0 mens jump on seekForBallGroundResult.minToballTick, -2 means jump 2 ticks before 'touch'
-         * @return
-         */
+    /**
+     * @param rules
+     * @param myRobot
+     * @param ballTrace
+     * @param seekForBallGroundResult
+     * @param steps
+     * @param jumpTickOffset          0 mens jump on seekForBallGroundResult.minToballTick, -2 means jump 2 ticks before 'touch'
+     * @return
+     */
     public static List<RobotMoveJumpPlan> robotMoveJumpGooalOptions(Rules rules, MyRobot myRobot,
-                                                             BallTrace ballTrace,
-                                                             BestMoveDouble seekForBallGroundResult, long steps,
-                                                             double jumpSpeed,
-                                                             int jumpTickOffset) {
+                                                                    BallTrace ballTrace,
+                                                                    BestMoveDouble seekForBallGroundResult, long steps,
+                                                                    double jumpSpeed,
+                                                                    int jumpTickOffset) {
         List<RobotMoveJumpPlan> result = new ArrayList<>();
 
         //start from center, move to sides
@@ -173,7 +190,7 @@ public class LookAhead {
             GamePlanResult gpr = predictRobotBallFutureMath(rules, ballTrace, myRobot.clone(), targetVelocity,
                     jumpTick, jumpSpeed, Constants.MICROTICKS_PER_TICK);
 
-            if(gpr.goalScoredTick > 0) {
+            if (gpr.goalScoredTick > 0) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
                 rmjp.gamePlanResult = gpr;
                 rmjp.jumpSpeed = jumpSpeed;
@@ -182,7 +199,7 @@ public class LookAhead {
 
                 result.add(rmjp);
 
-                if(result.size() > 1) {
+                if (result.size() > 1) {
                     //TODO: temporary, find only first goal
 
                     break;
@@ -191,6 +208,8 @@ public class LookAhead {
         }
         return result;
     }
+
+
 
     public static BestMoveDouble robotSeekForBallOnGround(Rules rules, MyRobot myRobot,
                                                           BallTrace ballTrace,
@@ -299,8 +318,8 @@ public class LookAhead {
 
 
     public static MyRobot robotGroundMoveAndJump(MyRobot mr, Vector3d targetVelocity, int ticks, int jumpTick, double jumpSpeed) {
-        if(ticks == 0) {
-            return  mr;
+        if (ticks == 0) {
+            return mr;
         }
 
         if (jumpTick > ticks) {
