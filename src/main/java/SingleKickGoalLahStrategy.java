@@ -72,6 +72,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
                 System.out.println(currentTick + ": " + bestGoalPlan);
 
                 thisTickPlans.put(bestGoalPlan.getKey(), bestGoalPlan.getValue());
+                jumpTick.clear();
                 jumpTick.put(bestGoalPlan.getKey(), new JumpCommand(bestGoalPlan.getValue().jumpTick + currentTick,
                         bestGoalPlan.getValue().jumpSpeed));
 
@@ -79,7 +80,6 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
                 myRobots.get(id).action.target_velocity = thisTickPlans.get(id).targetVelocity;
             }
         }
-
 //
 //        for (Map.Entry<Integer, RobotMoveJumpPlan> planEntry : thisTickPlans.entrySet()) {
 //            int id = planEntry.getKey();

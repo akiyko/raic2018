@@ -13,8 +13,8 @@ import java.util.*;
  * By no one on 23.12.2018.
  */
 public class FaceOff {
-//    public static final int GAME_TICKS = 18_000;
-    public static final int GAME_TICKS = 1000;
+    public static final int GAME_TICKS = 18_000;
+//    public static final int GAME_TICKS = 1000;
 
     private MyMyStrategy myStrategy;
     private MyMyStrategy opponentStrategy;
@@ -80,20 +80,35 @@ public class FaceOff {
 
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
-                myrobots.get(entry.getKey()).action = entry.getValue().action;
+                myrobots.stream()
+                        .filter(r->r.id == entry.getKey())
+                        .findAny()
+                        .orElse(null)
+                        .action = entry.getValue().action;
+//                myrobots.get(entry.getKey()).action = entry.getValue().action;
             }
             for (Map.Entry<Integer, MyRobot> entry : oppRobMapNegateZ.entrySet()) {
-                opprobots.get(entry.getKey()).action = entry.getValue().action;
-                opprobots.get(entry.getKey()).action.target_velocity_z = -opprobots.get(entry.getKey()).action.target_velocity_z;
-                opprobots.get(entry.getKey()).action.target_velocity = opprobots.get(entry.getKey()).action.target_velocity.negateZ();
+                opprobots.stream()
+                        .filter(r->r.id == entry.getKey())
+                        .findAny()
+                        .ifPresent(r-> {
+                            r.action = entry.getValue().action;
+                            r.action.target_velocity_z = -r.action.target_velocity_z;
+                            r.action.target_velocity = r.action.target_velocity.negateZ();
+                        });
+
+//                opprobots.get(entry.getKey()).action = entry.getValue().action;
+//                opprobots.get(entry.getKey()).action.target_velocity_z = -opprobots.get(entry.getKey()).action.target_velocity_z;
+//                opprobots.get(entry.getKey()).action.target_velocity = opprobots.get(entry.getKey()).action.target_velocity.negateZ();
             }
 
             try {
-                System.out.println(robots);
+//                System.out.println(robots);
                 Simulator.tick(rules, robots, myBall);
 
                 robots.forEach(r -> r.action = new Action());
                 System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
+                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
                     System.out.println("Goal scored for me at tick " + i);
@@ -118,7 +133,7 @@ public class FaceOff {
     Map<Integer, MyRobot> toMapClone(List<MyRobot> robots) {
         Map<Integer, MyRobot> result = new HashMap<>();
         for (int i = 0; i < robots.size(); i++) {
-            result.put(i, robots.get(i).clone());
+            result.put(robots.get(i).id, robots.get(i).clone());
         }
 
         return result;
@@ -127,23 +142,23 @@ public class FaceOff {
     Map<Integer, MyRobot> toMapCloneNegateZ(List<MyRobot> robots) {
         Map<Integer, MyRobot> result = new HashMap<>();
         for (int i = 0; i < robots.size(); i++) {
-            result.put(i, robots.get(i).cloneNegateZ());
+            result.put(robots.get(i).id, robots.get(i).cloneNegateZ());
         }
 
         return result;
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -35));
         MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
-        r1.id = 0;
-        r2.id = 1;
+        r1.id = 1;
+        r2.id = 2;
         return Arrays.asList(r1,r2);
     }
 
     public static List<MyRobot> oppRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-17, 2, 35));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(17, 2, 35));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, 30));//35? 0\3 ?
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, 30));
         r1.id = 3;
         r2.id = 4;
 

@@ -7,7 +7,7 @@ import org.junit.Test;
 public class FaceOffTest {
     @Test
     public void testLahKick() throws Exception {
-        FaceOff faceOff = new FaceOff(new SingleKickGoalLahStrategy(), new DoNothingMyStrategy());
+        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new SingleKickGoalLahStrategy());
 
         faceOff.simulate();
 
