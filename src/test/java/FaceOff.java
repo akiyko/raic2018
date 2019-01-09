@@ -43,7 +43,7 @@ public class FaceOff {
         boolean gamestart = true;
 
         for (int i = 0; i < GAME_TICKS; i++) {
-            System.out.println("TICK " + i + " ============================================");
+//            System.out.println("TICK " + i + " ============================================");
             if(gamestart) {
                 robots = new ArrayList<>();
                 myrobots = myRobots();
@@ -67,9 +67,9 @@ public class FaceOff {
             myStrategy.act(myRobotMap, oppRobMap, myBall, arena, i);
             opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena, i);
 
-            myRobotMap.forEach((id, mr) -> {
-                System.out.println(id +  "-> " + mr.action);
-            });
+//            myRobotMap.forEach((id, mr) -> {
+//                System.out.println(id +  "-> " + mr.action);
+//            });
 
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
@@ -99,14 +99,14 @@ public class FaceOff {
                 Simulator.tick(rules, robots, myBall);
 
                 robots.forEach(r -> r.action = new MyAction());
-                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
-                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
+//                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
+//                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
-                    System.out.println("Goal scored for me at tick " + i);
+//                    System.out.println("Goal scored for me at tick " + i);
                     myGoals ++;
                 } else {
-                    System.out.println("Goal scored for opponent at tick " + i);
+//                    System.out.println("Goal scored for opponent at tick " + i);
                     oppGoals ++;
                 }
 

@@ -19,7 +19,7 @@ public abstract class MyMyStrategyAbstract {
         long start = System.currentTimeMillis();
         computeTickLogic(tickNumber, myRobots, opponentRobots, ball, rules);
 
-        System.out.println("Tick took:" + (System.currentTimeMillis() - start) + "ms");
+//        System.out.println("Tick took:" + (System.currentTimeMillis() - start) + "ms");
 
         previousTickAction.putAll(thisTickActions);
     }

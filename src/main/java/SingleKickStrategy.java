@@ -37,7 +37,7 @@ public final class SingleKickStrategy implements MyMyStrategy {
             plan.targetVelocityProvider = velocityProvider;
 
             GamePlanResult gpr = LookAhead.predictRobotBallFutureSimulate(rules, mr, mb, plan, TICK_DEPTH, 100);
-            System.out.println(i + " min len to ball/gate     : " + gpr.minToBall.length() + " / " + gpr.minBallToOppGateCenter.length() + "goal at: " + gpr.goalScoredTick);
+//            System.out.println(i + " min len to ball/gate     : " + gpr.minToBall.length() + " / " + gpr.minBallToOppGateCenter.length() + "goal at: " + gpr.goalScoredTick);
         }
 
     }

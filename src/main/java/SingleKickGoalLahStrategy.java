@@ -52,7 +52,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
                             previousPlan.get(), rules, myRobot.clone(), bt);
 
                     recheckedPlan.ifPresent(rmjplan -> thisTickPlans.put(myRobot.id, rmjplan));
-                    System.out.println("Recalculated plan used");
+//                    System.out.println("Recalculated plan used");
                 } else {
                     List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt);
                     if (!rmjp.isEmpty()) {
@@ -72,7 +72,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
                     .findAny().orElse(null);
 
             if (bestGoalPlan != null) {
-                System.out.println(currentTick + ": " + bestGoalPlan);
+//                System.out.println(currentTick + ": " + bestGoalPlan);
 
                 thisTickPlans.put(bestGoalPlan.getKey(), bestGoalPlan.getValue());
                 jumpTick.clear();

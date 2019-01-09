@@ -559,7 +559,7 @@ public class LookAhead {
         BestMoveDouble bmdBall = LookAhead.singleRobotKickGoalGroundOld(rules, myRobot.clone(), myBall.clone(), jumpCondition, -Math.PI, Math.PI, 72,
                 (Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS) + 2, false, 150, 300, 100);
 
-        System.out.println("BmdBall: " + bmdBall);
+//        System.out.println("BmdBall: " + bmdBall);
 
         BestMoveDouble bmdGoal = LookAhead.singleRobotKickGoalGroundOld(rules, myRobot.clone(), myBall.clone(), jumpCondition, bmdBall.low, bmdBall.hi, 72,
                 0.0, true, 150, 300, 100);
