@@ -108,22 +108,29 @@ public class LookAhead {
 //
 //    }
 
-    public static Optional<RobotMoveJumpPlan> robotMoveJumpGoalOptionsCheckPreviousAndAdjust(
+    public static Optional<RobotMoveJumpPlan> robotMoveJumpGoalOptionsCheckPrevious (
             RobotMoveJumpPlan previous,
             Rules rules, MyRobot myRobot,
             BallTrace ballTrace) {
 
+        int jumpTickShifted = previous.jumpTick - 1;
 
+        if (jumpTickShifted > 0) {
+            GamePlanResult gpr = predictRobotBallFutureMath(rules, ballTrace, myRobot.clone(), previous.targetVelocity,
+                    jumpTickShifted, previous.jumpSpeed, Constants.MICROTICKS_PER_TICK);
 
-            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, myRobot.clone(), ballTrace, bmd,
-                    goalSteps, jumpSpeed, tickOffest);
+            if (gpr.goalScoredTick > 0) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = previous.jumpSpeed;
+                rmjp.jumpTick = previous.jumpTick - 1;
+                rmjp.targetVelocity = previous.targetVelocity;
 
-            if (!rmjp.isEmpty()) {
-                return rmjp;
+                return Optional.of(rmjp);
             }
         }
 
-        return Collections.emptyList();
+        return Optional.empty();
     }
 
     public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, MyRobot myRobot,
@@ -208,7 +215,6 @@ public class LookAhead {
         }
         return result;
     }
-
 
 
     public static BestMoveDouble robotSeekForBallOnGround(Rules rules, MyRobot myRobot,

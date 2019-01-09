@@ -5,9 +5,10 @@ import org.junit.Test;
  * @since 12/25/2018.
  */
 public class FaceOffTest {
+
     @Test
     public void testLahKick() throws Exception {
-        FaceOff faceOff = new FaceOff(new DoNothingMyStrategy(), new SingleKickGoalLahStrategy());
+        FaceOff faceOff = new FaceOff(new SingleKickGoalLahStrategy(), new DoNothingMyStrategy());
 
         faceOff.simulate();
 
@@ -15,7 +16,14 @@ public class FaceOffTest {
 
     @Test
     public void testLahKickJustKick() throws Exception {
-        FaceOff faceOff = new FaceOff(new SingleKickGoalLahStrategy(), new JustKickStrategy());
+        FaceOff faceOff = new FaceOff( new JustKickStrategy(), new SingleKickGoalLahStrategy());
+
+        faceOff.simulate();
+
+    }
+    @Test
+    public void testLahKickLahKick() throws Exception {
+        FaceOff faceOff = new FaceOff( new SingleKickGoalLahStrategy(), new SingleKickGoalLahStrategy());
 
         faceOff.simulate();
 

@@ -9,10 +9,7 @@ import model.Action;
 import model.Arena;
 import model.Rules;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalInt;
+import java.util.*;
 
 import static ai.LookAhead.robotMoveJumpGoalOptions;
 import static ai.model.Vector3d.of;
@@ -21,6 +18,8 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
 
     int tickDepth = 200;
     int mpt = 100;
+
+    int planRecalculateFrequency = Integer.MAX_VALUE; //never
 
     Rules rules;
 
@@ -42,8 +41,6 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
             thisTickActions.put(id, mr.action);
         });
 
-        previousTickPlans.clear();
-        previousTickPlans.putAll(thisTickPlans);
     }
 
     @Override
@@ -57,11 +54,21 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
 
         for (MyRobot myRobot : myRobots.values()) {
             if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, of(0.0, 1.0, 0.0)) > 0.99) {
+                //check previous
+                Optional<RobotMoveJumpPlan> previousPlan = Optional.ofNullable(previousTickPlans.get(myRobot.id));
+                boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
+                if(!recalculateAnyway && previousPlan.isPresent()) {
+                    Optional<RobotMoveJumpPlan> recheckedPlan = LookAhead.robotMoveJumpGoalOptionsCheckPrevious(
+                            previousPlan.get(), rules, myRobot.clone(), bt);
 
-                List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt);
-                if (!rmjp.isEmpty()) {
-                    RobotMoveJumpPlan rmjplan = rmjp.get(0);
-                    thisTickPlans.put(myRobot.id, rmjplan);
+                    recheckedPlan.ifPresent(rmjplan -> thisTickPlans.put(myRobot.id, rmjplan));
+                    System.out.println("Recalculated plan used");
+                } else {
+                    List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt);
+                    if (!rmjp.isEmpty()) {
+                        RobotMoveJumpPlan rmjplan = rmjp.get(0);
+                        thisTickPlans.put(myRobot.id, rmjplan);
+                    }
                 }
             }
         }
@@ -93,6 +100,8 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
 //            myRobots.get(id).action.target_velocity = thisTickPlans.get(id).targetVelocity;
 //        }
 
+        previousTickPlans.clear();
+        previousTickPlans.putAll(thisTickPlans);
     }
 
     @Override
