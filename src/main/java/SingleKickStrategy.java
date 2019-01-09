@@ -1,16 +1,8 @@
-import ai.Constants;
-import ai.LookAhead;
-import ai.model.MyBall;
-import ai.model.MyRobot;
-import ai.model.Vector3d;
-import ai.plan.*;
 import model.Action;
 import model.Arena;
 import model.Rules;
 
 import java.util.Map;
-
-import static ai.model.Vector3d.of;
 
 public final class SingleKickStrategy implements MyMyStrategy {
 
@@ -32,7 +24,7 @@ public final class SingleKickStrategy implements MyMyStrategy {
              MyBall mb = ball.clone();
 
             RobotGamePlan plan = new RobotGamePlan();
-            TargetVelocityProvider velocityProvider = new FixedTargetVelocity(of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED));
+            TargetVelocityProvider velocityProvider = new FixedTargetVelocity(Vector3d.of(x, 0, z).multiply(Constants.ROBOT_MAX_GROUND_SPEED));
             plan.initialPosition = mr.clone();
             plan.jumpCondition = (myRobot, myBall) -> {
                 if(myRobot.position.minus(myBall.position).length() < 4) {
@@ -59,8 +51,8 @@ public final class SingleKickStrategy implements MyMyStrategy {
 
         act(myRobots.get(0), ball, arena);
 
-        Action nop = new Action();
-        nop.target_velocity = of(0,0,0);
+        MyAction nop = new MyAction();
+        nop.target_velocity = Vector3d.of(0,0,0);
         myRobots.get(1).action = nop;
         myRobots.get(0).action = nop;
     }

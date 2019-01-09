@@ -1,6 +1,3 @@
-import ai.model.MyBall;
-import ai.model.MyRobot;
-import model.Arena;
 import model.Rules;
 
 import java.util.Map;

@@ -1,22 +1,12 @@
-import ai.Constants;
-import ai.LookAhead;
-import ai.model.MyBall;
-import ai.model.MyRobot;
-import ai.model.Position;
-import ai.model.Vector3d;
-import ai.plan.*;
 import model.Action;
 import model.Arena;
 import model.Rules;
 
 import java.util.*;
 
-import static ai.LookAhead.robotMoveJumpGoalOptions;
-import static ai.model.Vector3d.of;
-
 public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implements MyMyStrategy {
 
-    int tickDepth = 200;
+    int tickDepth = 300;
     int mpt = 100;
 
     int planRecalculateFrequency = Integer.MAX_VALUE; //never
@@ -32,7 +22,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
     @Override
     public void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules) {
 
-        System.out.println("JujpTick: " + jumpTick);
+//        System.out.println("JujpTick: " + jumpTick);
         this.setRules(rules);
 
         act(myRobots, opponentRobots, ball, rules.arena, tickNumber);
@@ -53,7 +43,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, ball.clone(), tickDepth, mpt);
 
         for (MyRobot myRobot : myRobots.values()) {
-            if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, of(0.0, 1.0, 0.0)) > 0.99) {
+            if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, Vector3d.of(0.0, 1.0, 0.0)) > 0.99) {
                 //check previous
                 Optional<RobotMoveJumpPlan> previousPlan = Optional.ofNullable(previousTickPlans.get(myRobot.id));
                 boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
@@ -128,7 +118,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
 
     private void setBackToStablesForAll(Map<Integer, MyRobot> myRobots) {
         myRobots.forEach((id, mr) -> {
-            mr.action = new Action();
+            mr.action = new MyAction();
             mr.action.target_velocity =
                     new Position(0, 1, -0.5 * rules.arena.depth).minus(mr.position).zeroY()
                             .normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);

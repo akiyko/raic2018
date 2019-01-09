@@ -1,5 +1,3 @@
-import ai.model.MyBall;
-import ai.model.MyRobot;
 import model.Action;
 import model.Game;
 import model.Robot;
@@ -40,9 +38,9 @@ public class StrategyWrapper implements Strategy {
 
         Action act = myMyStrategy.act(me.id);
         action.jump_speed = act.jump_speed;
-        action.target_velocity_x = act.target_velocity.dx;
-        action.target_velocity_y = act.target_velocity.dy;
-        action.target_velocity_z = act.target_velocity.dz;
+        action.target_velocity_x = act.target_velocity_x;
+        action.target_velocity_y = act.target_velocity_y;
+        action.target_velocity_z = act.target_velocity_z;
         action.use_nitro = act.use_nitro;
     }
 

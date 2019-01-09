@@ -1,12 +1,6 @@
-import ai.Constants;
-import ai.model.MyBall;
-import ai.model.MyRobot;
-import ai.model.Vector3d;
 import model.*;
 
 import java.util.Map;
-
-import static ai.model.Vector3d.of;
 
 public final class JustKickStrategy implements MyMyStrategy {
 
@@ -34,20 +28,24 @@ public final class JustKickStrategy implements MyMyStrategy {
 
 
     public void act(MyRobot r, MyBall ball, Arena arena) {
-        Action action = new Action();
+        MyAction action = new MyAction();
+
+        double target_velocity_x;
+        double target_velocity_y = 0;
+        double target_velocity_z;
 
         if(r.position.z <= ball.position.z) {
-            action.target_velocity_x = (ball.position.x - r.position.x) * 100;
-            action.target_velocity_z = (ball.position.z - r.position.z) * 100;
+            target_velocity_x = (ball.position.x - r.position.x) * 100;
+            target_velocity_z = (ball.position.z - r.position.z) * 100;
         } else {
-            action.target_velocity_x = (ball.position.x - r.position.x) * 100;
-            action.target_velocity_z = -(arena.depth * 0.5 + Constants.ROBOT_MIN_RADIUS * 2) - r.position.z;
+            target_velocity_x = (ball.position.x - r.position.x) * 100;
+            target_velocity_z = -(arena.depth * 0.5 + Constants.ROBOT_MIN_RADIUS * 2) - r.position.z;
         }
-        action.target_velocity = of(action.target_velocity_x, action.target_velocity_y, action.target_velocity_z);
+        action.target_velocity = Vector3d.of(target_velocity_x, target_velocity_y, target_velocity_z);
 
         if(jumping) {
             Vector3d toBall = ball.position.minus(r.position);
-            Vector3d flatPos = of(toBall.dx, 0, toBall.dz);
+            Vector3d flatPos = Vector3d.of(toBall.dx, 0, toBall.dz);
 
             if(flatPos.length() < Constants.ROBOT_RADIUS + Constants.BALL_RADIUS + 1) {
                 action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;

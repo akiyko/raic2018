@@ -1,18 +1,13 @@
-import ai.Constants;
-import ai.model.MyBall;
-import ai.model.MyRobot;
 import model.*;
 
 import java.util.Map;
 
-import static ai.model.Vector3d.of;
-
 public final class DoNothingMyStrategy implements MyMyStrategy {
 
     public void act(MyRobot r, MyBall ball, Arena arena) {
-        Action action = new Action();
+        MyAction action = new MyAction();
 
-        action.target_velocity = of(0,0,0);
+        action.target_velocity = Vector3d.of(0,0,0);
         r.action = action;
     }
 

@@ -1,10 +1,3 @@
-import ai.Constants;
-import ai.GoalScoredException;
-import ai.Simulator;
-import ai.TestUtils;
-import ai.model.MyBall;
-import ai.model.MyRobot;
-import ai.model.Position;
 import model.*;
 
 import java.util.*;
@@ -93,7 +86,6 @@ public class FaceOff {
                         .findAny()
                         .ifPresent(r-> {
                             r.action = entry.getValue().action;
-                            r.action.target_velocity_z = -r.action.target_velocity_z;
                             r.action.target_velocity = r.action.target_velocity.negateZ();
                         });
 
@@ -106,7 +98,7 @@ public class FaceOff {
 //                System.out.println(robots);
                 Simulator.tick(rules, robots, myBall);
 
-                robots.forEach(r -> r.action = new Action());
+                robots.forEach(r -> r.action = new MyAction());
                 System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
                 System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
             } catch(GoalScoredException e) {
