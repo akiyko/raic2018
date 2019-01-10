@@ -102,7 +102,7 @@ public class LookAhead {
 //
 //    }
 
-    public static Optional<RobotMoveJumpPlan> robotMoveJumpGoalOptionsCheckPrevious (
+    public static Optional<RobotMoveJumpPlan> robotMoveJumpGoalOptionsCheckPrevious(
             RobotMoveJumpPlan previous,
             Rules rules, MyRobot myRobot,
             BallTrace ballTrace) {
@@ -267,6 +267,7 @@ public class LookAhead {
             MyRobot mr = robotGroundMoveAndJump(myRobot.clone(), targetVelocity, i, jumpTick, jumpSpeed);
 
             Vector3d toBall = thisTickBall.position.minus(mr.position);
+
             if (toBall.lengthSquare() < result.minToBall.lengthSquare()) {
                 result.minToBall = toBall;
                 result.minToBallTick = i;
@@ -275,6 +276,18 @@ public class LookAhead {
             if (toBallGround.lengthSquare() < result.minToBallGround.lengthSquare()) {
                 result.minToBallGround = toBallGround;
                 result.minToBallGroundTick = i;
+            }
+
+            double lenToBall = toBallGround.length();
+            if (lenToBall > OptimiseOptions.MIN_LEN_TO_BALL_REQUIRED) {
+                //skip some ticks if too far from ball
+                i += OptimiseOptions.SKIP_BALL_TRACE_TICKS;
+                continue;
+            }
+            if (lenToBall > OptimiseOptions.MIN_LEN_TO_BALL_REQUIRED * 0.5) {
+                //skip some ticks if too far from ball
+                i += OptimiseOptions.SKIP_BALL_TRACE_TICKS / 2;
+                continue;
             }
 
             double dr = (Constants.ROBOT_MAX_RADIUS - Constants.ROBOT_MIN_RADIUS) * jumpSpeed / Constants.ROBOT_MAX_JUMP_SPEED;
@@ -296,7 +309,8 @@ public class LookAhead {
 
 //            System.out.println("Ball before call sim:" + b + " beforeTouchTick: " + beforeTouchTick);
             try {
-                Simulator.tick(rules, Collections.singletonList(mr), b, mpt);
+//                Simulator.tick(rules, Collections.singletonList(mr), b, mpt);
+                SimulatorOptimised.tick(rules, Collections.singletonList(mr), b, mpt, OptimiseOptions.noCollideWithArena());
             } catch (GoalScoredException e) {
                 return new GamePlanResult();
             }

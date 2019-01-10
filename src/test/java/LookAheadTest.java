@@ -266,6 +266,25 @@ public class LookAheadTest {
     }
 
     @Test
+    public void testFindGoalPerformance() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        myBall.velocity = Vector3d.of(-10, 0, 0);
+
+        long start = System.currentTimeMillis();
+
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        int repeatCount = 40000;
+
+        for (int i = 0; i < repeatCount; i++) {
+            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt);
+        }
+        long total = System.currentTimeMillis() - start;
+        System.out.println("Average: " + (total / repeatCount) + "ms");
+    }
+
+    @Test
     public void testFindGoal() throws Exception {
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
         MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
