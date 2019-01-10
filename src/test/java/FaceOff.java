@@ -141,16 +141,16 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 1.2, -30));
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 1.2, -30));
         r1.id = 1;
         r2.id = 2;
         return Arrays.asList(r1,r2);
     }
 
     public static List<MyRobot> oppRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 2, 30));//35? 0\3 ?
-        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 2, 30));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(-10, 1.2, 30));//35? 0\3 ?
+        MyRobot r2 = TestUtils.robotInTheAir(new Position(10, 1.2, 30));
         r1.id = 3;
         r2.id = 4;
 

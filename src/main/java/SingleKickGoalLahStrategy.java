@@ -6,10 +6,11 @@ import java.util.*;
 
 public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implements MyMyStrategy {
 
-    int tickDepth = 300;
+    int tickDepth = 260;
     int mpt = 100;
 
     int planRecalculateFrequency = Integer.MAX_VALUE; //never
+    int planCalculateGoalPlanFrequency = 5; //if failed to find a goal plan - don't try ~ next 5 ticks
 
     Rules rules;
 
@@ -42,22 +43,31 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
         setOrUnsetJump(myRobots, currentTick);
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, ball.clone(), tickDepth, mpt);
 
-        for (MyRobot myRobot : myRobots.values()) {
-            if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, Vector3d.of(0.0, 1.0, 0.0)) > 0.99) {
-                //check previous
-                Optional<RobotMoveJumpPlan> previousPlan = Optional.ofNullable(previousTickPlans.get(myRobot.id));
-                boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
-                if(!recalculateAnyway && previousPlan.isPresent()) {
-                    Optional<RobotMoveJumpPlan> recheckedPlan = LookAhead.robotMoveJumpGoalOptionsCheckPrevious(
-                            previousPlan.get(), rules, myRobot.clone(), bt);
+        if(!previousTickPlans.isEmpty() || currentTick % planCalculateGoalPlanFrequency == 0) {//need to reset counter after opponent touchs the ball
+            for (MyRobot myRobot : myRobots.values()) {
+                if(currentTick % planCalculateGoalPlanFrequency != 0) {
+                    //skip other robots if not calculate tick
+                    if(!previousTickPlans.containsKey(myRobot.id)) {
+                        continue;
+                    }
+                }
 
-                    recheckedPlan.ifPresent(rmjplan -> thisTickPlans.put(myRobot.id, rmjplan));
+                if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, Vector3d.of(0.0, 1.0, 0.0)) > 0.99) {
+                    //check previous
+                    Optional<RobotMoveJumpPlan> previousPlan = Optional.ofNullable(previousTickPlans.get(myRobot.id));
+                    boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
+                    if (!recalculateAnyway && previousPlan.isPresent()) {
+                        Optional<RobotMoveJumpPlan> recheckedPlan = LookAhead.robotMoveJumpGoalOptionsCheckPrevious(
+                                previousPlan.get(), rules, myRobot.clone(), bt);
+
+                        recheckedPlan.ifPresent(rmjplan -> thisTickPlans.put(myRobot.id, rmjplan));
 //                    System.out.println("Recalculated plan used");
-                } else {
-                    List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt);
-                    if (!rmjp.isEmpty()) {
-                        RobotMoveJumpPlan rmjplan = rmjp.get(0);
-                        thisTickPlans.put(myRobot.id, rmjplan);
+                    } else {
+                        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt);
+                        if (!rmjp.isEmpty()) {
+                            RobotMoveJumpPlan rmjplan = rmjp.get(0);
+                            thisTickPlans.put(myRobot.id, rmjplan);
+                        }
                     }
                 }
             }
@@ -71,10 +81,12 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
             Map.Entry<Integer, RobotMoveJumpPlan> bestGoalPlan = thisTickPlans.entrySet().stream().filter(e -> e.getValue().gamePlanResult.goalScoredTick == bestGoal.getAsInt())
                     .findAny().orElse(null);
 
+            thisTickPlans.entrySet().removeIf(e -> !e.getKey().equals(bestGoalPlan.getKey()));
+
             if (bestGoalPlan != null) {
 //                System.out.println(currentTick + ": " + bestGoalPlan);
 
-                thisTickPlans.put(bestGoalPlan.getKey(), bestGoalPlan.getValue());
+//                thisTickPlans.put(bestGoalPlan.getKey(), bestGoalPlan.getValue());
                 jumpTick.clear();
                 jumpTick.put(bestGoalPlan.getKey(), new JumpCommand(bestGoalPlan.getValue().jumpTick + currentTick,
                         bestGoalPlan.getValue().jumpSpeed));
