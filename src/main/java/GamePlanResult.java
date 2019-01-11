@@ -4,6 +4,7 @@
  */
 public class GamePlanResult {
    public int goalScoredTick = -1;
+   public int potentialGoalScoredTick = -1;//if goal is only by width, not height
    public int oppGoalScored = -1;
    public int beforeBallTouchTick = -1;
 
@@ -25,6 +26,7 @@ public class GamePlanResult {
    public String toString() {
       return "GamePlanResult{" +
               "goalScoredTick=" + goalScoredTick +
+              ", pgoalScoredTick=" + potentialGoalScoredTick +
               ", oppGoalScored=" + oppGoalScored +
               ", minToBall=" + minToBall +
               ", minToBallTick=" + minToBallTick +

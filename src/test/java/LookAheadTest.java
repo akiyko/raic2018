@@ -40,7 +40,7 @@ public class LookAheadTest {
             if (i == jumpTick) {
                 r.action.jump_speed = jumpSpeed;
             }
-            Simulator.tick(rules, Collections.singletonList(mrm), TestUtils.ballInTheAir(new Position(20, 10, 10)), 100);
+            Simulator.tick(rules, Collections.singletonList(mrm), TestUtils.ballInTheAir(new Position(20, 10, 10)), 100, Collections.emptyList());
             MyRobot mrMath = LookAhead.robotGroundMoveAndJump(r, action.target_velocity, i, jumpTick, jumpSpeed);
 
             System.out.println(i + "=============================");
@@ -267,6 +267,8 @@ public class LookAheadTest {
 
     @Test
     public void testFindGoalPerformance() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
+        strategyParams.usePotentialGoals = true;
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
         MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
         myBall.velocity = Vector3d.of(-10, 0, 0);
@@ -275,10 +277,10 @@ public class LookAheadTest {
 
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
 
-        int repeatCount = 40000;
+        int repeatCount = 10000;
 
         for (int i = 0; i < repeatCount; i++) {
-            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt);
+            List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt, strategyParams);
         }
         long total = System.currentTimeMillis() - start;
         System.out.println("Average: " + (total / repeatCount) + "ms");
@@ -286,14 +288,17 @@ public class LookAheadTest {
 
     @Test
     public void testFindGoal() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
+        strategyParams.usePotentialGoals = true;
+
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
-        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 4, -1));
         myBall.velocity = Vector3d.of(-10, 0,0);
 
         long start = System.currentTimeMillis();
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
 
-        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt);
+        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, r1, bt, strategyParams);
 
         System.out.println("Total rmjp: " + (System.currentTimeMillis() - start) + "ms");
 
@@ -327,6 +332,7 @@ public class LookAheadTest {
 
     @Test
     public void testFindGoalSeekFirst() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
         MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
         myBall.velocity = Vector3d.of(0, 0,0);
@@ -339,7 +345,7 @@ public class LookAheadTest {
 
         BestMoveDouble bmd = LookAhead.robotSeekForBallOnGround(rules, r1, bt, -Math.PI, Math.PI, 80, 3);
         System.out.println(bmd);
-        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, r1, bt, bmd, 40, jumpSpeed, jumpTickOffset);
+        List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, r1, bt, bmd, 40, jumpSpeed, jumpTickOffset, strategyParams);
 
         System.out.println("Total ball search: " + (System.currentTimeMillis() - start) + "ms");
 

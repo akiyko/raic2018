@@ -1,6 +1,9 @@
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 /**
  * immutable
- *
+ * <p>
  * By no one on 18.12.2018.
  */
 public final class Position {
@@ -25,6 +28,7 @@ public final class Position {
     public Position minus(Vector3d v) {
         return new Position(x - v.dx, y - v.dy, z - v.dz);
     }
+
     public Vector3d minus(Position p) {
         return Vector3d.of(x - p.x, y - p.y, z - p.z);
     }
@@ -32,6 +36,7 @@ public final class Position {
     public Position negateX() {
         return new Position(-x, y, z);
     }
+
     public Position negateZ() {
         return new Position(x, y, -z);
     }
@@ -40,6 +45,15 @@ public final class Position {
         return MathUtils.isZero(x - b.x)
                 && MathUtils.isZero(y - b.y)
                 && MathUtils.isZero(z - b.z);
+    }
+
+    public Position rotateAroundZero(double thetha) {
+//        x1 = x cos t − y sin t
+//        y1 = x sin t + y cos t
+        double x1 = x * cos(thetha) - z * sin(thetha);
+        double z1 = x * sin(thetha) + z * cos(thetha);
+
+        return new Position(x1, y, z1);
     }
 
     @Override

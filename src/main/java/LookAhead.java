@@ -128,7 +128,7 @@ public class LookAhead {
     }
 
     public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, MyRobot myRobot,
-                                                                   BallTrace ballTrace) {
+                                                                   BallTrace ballTrace, StrategyParams strategyParams) {
 
         int seekSteps = 80;
         int goalSteps = 80;
@@ -147,7 +147,7 @@ public class LookAhead {
 
         for (int tickOffest = ticksOffsetStart; tickOffest >= ticksOffsetMin; tickOffest--) {
             List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGooalOptions(rules, myRobot.clone(), ballTrace, bmd,
-                    goalSteps, jumpSpeed, tickOffest);
+                    goalSteps, jumpSpeed, tickOffest, strategyParams);
 
             if (!rmjp.isEmpty()) {
                 return rmjp;
@@ -170,8 +170,9 @@ public class LookAhead {
                                                                     BallTrace ballTrace,
                                                                     BestMoveDouble seekForBallGroundResult, long steps,
                                                                     double jumpSpeed,
-                                                                    int jumpTickOffset) {
+                                                                    int jumpTickOffset, StrategyParams strategyParams) {
         List<RobotMoveJumpPlan> result = new ArrayList<>();
+        List<RobotMoveJumpPlan> resultPotential = new ArrayList<>();
 
         //start from center, move to sides
 
@@ -191,6 +192,16 @@ public class LookAhead {
             GamePlanResult gpr = predictRobotBallFutureMath(rules, ballTrace, myRobot.clone(), targetVelocity,
                     jumpTick, jumpSpeed, Constants.MICROTICKS_PER_TICK);
 
+            if (gpr.potentialGoalScoredTick > 0 && resultPotential.isEmpty()) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = jumpSpeed;
+                rmjp.jumpTick = jumpTick;
+                rmjp.targetVelocity = targetVelocity;
+
+                resultPotential.add(rmjp);
+            }
+
             if (gpr.goalScoredTick > 0) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
                 rmjp.gamePlanResult = gpr;
@@ -207,6 +218,12 @@ public class LookAhead {
                 }
             }
         }
+
+        if(strategyParams.usePotentialGoals) {
+//            return resultPotential;
+            return (result.isEmpty()) ? resultPotential : result;
+        }
+
         return result;
     }
 
@@ -325,6 +342,9 @@ public class LookAhead {
             if (bg.oppGoalScoredTick > 0) {
                 result.oppGoalScored = (int) bg.oppGoalScoredTick + beforeTouchTick + 1;
             }
+            if(bg.potentialGoalScoredTick > 0) {
+                result.potentialGoalScoredTick = (int) bg.potentialGoalScoredTick + beforeTouchTick + 1;
+            }
         }
 
         return result;
@@ -430,6 +450,11 @@ public class LookAhead {
                 result.oppGoalScoredTick = t * Constants.TICKS_PER_SECOND;
             }
         }
+
+        if (ballFinalPosition.z > 0
+                && Math.abs(ballFinalPosition.x) < rules.arena.goal_width - Constants.BALL_RADIUS - 1) {//-1 for safety
+            result.potentialGoalScoredTick = t * Constants.TICKS_PER_SECOND;
+        }
         return result;
     }
 
@@ -517,7 +542,7 @@ public class LookAhead {
         int i = 0;
         try {
             for (; i < tickDepth; i++) {
-                Simulator.tick(rules, Collections.emptyList(), myBall, mpt);
+                Simulator.tick(rules, Collections.emptyList(), myBall, mpt, Collections.emptyList());
                 bt.ballTrace.add(myBall.clone());
             }
 
@@ -554,7 +579,7 @@ public class LookAhead {
             }
 
             try {
-                Simulator.tick(rules, Collections.singletonList(myRobot), myBall, mpt);
+                Simulator.tick(rules, Collections.singletonList(myRobot), myBall, mpt, Collections.emptyList());
             } catch (GoalScoredException e) {
                 if (e.getZ() > 0) {
                     result.goalScoredTick = i;

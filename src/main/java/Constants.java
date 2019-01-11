@@ -12,6 +12,7 @@ public class Constants {
     public static final double ROBOT_RADIUS = 1;
     public static final double ROBOT_MASS = 2;
     public static final double TICKS_PER_SECOND = 60;
+    public static final int TICKS_PER_SECOND_I = 60;
     public static final double MICROTICKS_PER_TICK = 100;
     public static final double RESET_TICKS = 2 * TICKS_PER_SECOND;
     public static final double BALL_ARENA_E = 0.7;
@@ -28,7 +29,7 @@ public class Constants {
     public static final double NITRO_PACK_Z = 30;
     public static final double NITRO_PACK_RADIUS = 0.5;
     public static final double NITRO_PACK_AMOUNT = 100;
-    public static final double NITRO_RESPAWN_TICKS = 10 * TICKS_PER_SECOND;
+    public static final int NITRO_RESPAWN_TICKS = 10 * TICKS_PER_SECOND_I;
     public static final double GRAVITY = 30;
 
 

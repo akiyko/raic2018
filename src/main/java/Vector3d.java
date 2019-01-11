@@ -1,3 +1,6 @@
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 /**
  * immutable
  * <p>
@@ -50,6 +53,23 @@ public final class Vector3d {
         }
         double divlen = 1 / len;
         return new Vector3d(dx * divlen, dy * divlen, dz * divlen);
+    }
+
+    public Vector3d rotate(double thetha) {
+        double x1 = dx * cos(thetha) - dz * sin(thetha);
+        double z1 = dx * sin(thetha) + dz * cos(thetha);
+
+        return of(x1, dy, z1);
+    }
+
+    /**
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static double angle2dBetween(Vector3d v1, Vector3d v2) {
+        double theta = Math.acos(Vector3d.dot(v1.normalize(), v2.normalize()));
+        ...
     }
 
     public static double dot(Vector3d a, Vector3d b) {

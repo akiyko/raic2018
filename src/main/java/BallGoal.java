@@ -3,6 +3,7 @@
  */
 public class BallGoal {
     public double goalScoredTick = -1;
+    public double potentialGoalScoredTick = -1;//if goal is only by width, not height
     public double oppGoalScoredTick = -1;
 
     public Position finalPosition;

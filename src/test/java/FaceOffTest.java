@@ -8,7 +8,7 @@ public class FaceOffTest {
 
     @Test
     public void testLahKick() throws Exception {
-        FaceOff faceOff = new FaceOff(new SingleKickGoalLahStrategy(), new DoNothingMyStrategy());
+        FaceOff faceOff = new FaceOff(new SingleKickGoalLahStrategy(false), new DoNothingMyStrategy());
 
         faceOff.simulate();
 
@@ -23,7 +23,7 @@ public class FaceOffTest {
     }
     @Test
     public void testLahKickLahKick() throws Exception {
-        FaceOff faceOff = new FaceOff( new SingleKickGoalLahStrategy(), new SingleKickGoalLahStrategy());
+        FaceOff faceOff = new FaceOff( new SingleKickGoalLahStrategy(false), new SingleKickGoalLahStrategy(true));
 
         faceOff.simulate();
 

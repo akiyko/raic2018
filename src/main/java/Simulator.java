@@ -22,7 +22,7 @@ public class Simulator {
             double delta_velocity = Vector3d.dot(b.velocity.minus(a.velocity), normal) + b.radiusChangeSpeed - a.radiusChangeSpeed;
             if (delta_velocity < 0) {
 //                Vector3d impulse = normal.multiply((1 + random(MIN_HIT_E, MAX_HIT_E)) * delta_velocity); //TODO: testing
-                Vector3d impulse = normal.multiply((1 + 0.5 *(Constants.MIN_HIT_E + Constants.MAX_HIT_E)) * delta_velocity);
+                Vector3d impulse = normal.multiply((1 + 0.5 * (Constants.MIN_HIT_E + Constants.MAX_HIT_E)) * delta_velocity);
                 a.velocity = a.velocity.plus(impulse.multiply(k_a));
                 b.velocity = b.velocity.minus(impulse.multiply(k_b));
             }
@@ -55,7 +55,7 @@ public class Simulator {
         if (negate_z) {
             pointTo = pointTo.negateZ();
         }
-        Dan result =  dan_to_plane(pointTo, new Position(0, 0, 0), Vector3d.of(0, 1, 0));
+        Dan result = dan_to_plane(pointTo, new Position(0, 0, 0), Vector3d.of(0, 1, 0));
         double resultnormalx = result.normal.dx;
         double resultnormalz = result.normal.dz;
         if (negate_x) {
@@ -396,12 +396,12 @@ public class Simulator {
                 && MathUtils.isZero(danToArena.normal.dx) && MathUtils.isZero(danToArena.normal.dz) && danToArena.normal.dy > 0;
 
         //if no collision in two ticks - don't do collide
-        if(danToArena.distance > ball.radius + 1.2 * ball.velocity.length() * mpt * delta_time) {
+        if (danToArena.distance > ball.radius + 1.2 * ball.velocity.length() * mpt * delta_time) {
             for (int i = 0; i < mpt; i++) {
                 move(ball, delta_time);
             }
         } else {
-            if(isBottom) {
+            if (isBottom) {
                 for (int i = 0; i < mpt; i++) {
                     move(ball, delta_time);
                     collide_with_arena_bot(ball, rules.arena);
@@ -418,7 +418,45 @@ public class Simulator {
         }
     }
 
-    public static void update(double delta_time, Rules rules, List<MyRobot> robots, MyBall ball) {
+    public static void updateRobotOnly(double delta_time, Rules rules, MyRobot robot) {
+        if (robot.touch) {
+            Vector3d target_velocity =
+                    robot.action.target_velocity.clamp(Constants.ROBOT_MAX_GROUND_SPEED);
+            target_velocity = target_velocity.minus(robot.touch_normal.multiply(Vector3d.dot(robot.touch_normal, target_velocity)));
+            Vector3d target_velocity_change = target_velocity.minus(robot.velocity);
+            if (target_velocity_change.length() > 0) {
+                double acceleration = Constants.ROBOT_ACCELERATION * Math.max(0, robot.touch_normal.dy);
+                robot.velocity = robot.velocity.plus(
+                        target_velocity_change.normalize().multiply(acceleration * delta_time)
+                                .clamp(target_velocity_change.length()));
+            }
+        }
+
+        if (robot.action.use_nitro) {
+            Vector3d target_velocity_change =
+                    robot.action.target_velocity.minus(robot.velocity).clamp(robot.nitro * Constants.NITRO_POINT_VELOCITY_CHANGE);
+            if (target_velocity_change.length() > 0) {
+                Vector3d acceleration = target_velocity_change.normalize().multiply(Constants.ROBOT_NITRO_ACCELERATION);
+                Vector3d velocity_change = acceleration.multiply(delta_time).clamp(target_velocity_change.length());
+                robot.velocity = robot.velocity.plus(velocity_change);
+                robot.nitro -= velocity_change.length() / Constants.NITRO_POINT_VELOCITY_CHANGE;
+            }
+        }
+        move(robot, delta_time);
+        robot.radius = Constants.ROBOT_MIN_RADIUS
+                + (Constants.ROBOT_MAX_RADIUS - Constants.ROBOT_MIN_RADIUS) * robot.action.jump_speed / Constants.ROBOT_MAX_JUMP_SPEED;
+        robot.radiusChangeSpeed = robot.action.jump_speed;
+
+        Vector3d collision_normal = collide_with_arena(robot, rules.arena);
+        if (collision_normal == null) {
+            robot.touch = false;
+        } else {
+            robot.touch = true;
+            robot.touch_normal = collision_normal;
+        }
+    }
+
+    public static void update(double delta_time, Rules rules, List<MyRobot> robots, MyBall ball, List<NitroPack> nitroPacks) {
         Collections.shuffle(robots);
         for (MyRobot robot : robots) {
             if (robot.touch) {
@@ -473,30 +511,52 @@ public class Simulator {
 
         //TODO: implement nitro packs
 
-//      for (MyRobot robot : robots) {
-//          if (robot.nitro == MAX_NITRO_AMOUNT) {
-//              continue;
-//          }
-//          for pack in nitro_packs:
-//          if not pack.alive:
-//          continue
-//          if length(robot.position - pack.position) <= robot.radius + pack.radius:
-//          robot.nitro = MAX_NITRO_AMOUNT
-//          pack.alive = false
-//          pack.respawn_ticks = NITRO_PACK_RESPAWN_TICKS
-//      }
+        for (MyRobot robot : robots) {
+            if (robot.nitro == Constants.MAX_NITRO_AMOUNT) {
+                continue;
+            }
 
+            for (NitroPack nitroPack : nitroPacks) {
+                if (!nitroPack.alive) {
+                    continue;
+                }
+                if (robot.position.minus(nitroPack.position).length() < robot.radius + nitroPack.radius) {
+                    robot.nitro = Constants.MAX_NITRO_AMOUNT;
+                    nitroPack.alive = false;
+                    nitroPack.respawn_ticks = Constants.NITRO_RESPAWN_TICKS;
+                }
+            }
+        }
+    }
+
+    public static void tickRobotOnly(Rules rules, MyRobot robot, double microticksPerTick) {
+        double delta_time = 1.0 / Constants.TICKS_PER_SECOND;
+        for (int i = 0; i < microticksPerTick; i++) {
+            updateRobotOnly(delta_time / microticksPerTick, rules, robot);
+        }
     }
 
     public static void tick(Rules rules, List<MyRobot> robots, MyBall ball) {
-        tick(rules, robots, ball, Constants.MICROTICKS_PER_TICK);
-
+        tick(rules, robots, ball, Constants.MICROTICKS_PER_TICK, Collections.emptyList());
     }
 
-    public static void tick(Rules rules, List<MyRobot> robots, MyBall ball, double microticksPerTick) {
+    public static void tick(Rules rules, List<MyRobot> robots, MyBall ball, List<NitroPack> nitroPacks) {
+        tick(rules, robots, ball, Constants.MICROTICKS_PER_TICK, nitroPacks);
+    }
+
+    public static void tick(Rules rules, List<MyRobot> robots, MyBall ball, double microticksPerTick, List<NitroPack> nitroPacks) {
         double delta_time = 1.0 / Constants.TICKS_PER_SECOND;
-        for( int i = 0; i< microticksPerTick; i++) {
-            update(delta_time / microticksPerTick, rules, robots, ball);
+        for (int i = 0; i < microticksPerTick; i++) {
+            update(delta_time / microticksPerTick, rules, robots, ball, nitroPacks);
+        }
+        for (NitroPack nitroPack : nitroPacks) {
+            if (nitroPack.alive) {
+                continue;
+            }
+            nitroPack.respawn_ticks--;
+            if (nitroPack.respawn_ticks == 0) {
+                nitroPack.alive = true;
+            }
         }
 //        for pack in nitro_packs:
 //        if pack.alive:

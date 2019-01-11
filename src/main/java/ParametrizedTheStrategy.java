@@ -1,32 +1,22 @@
-import model.Action;
 import model.Arena;
 import model.Rules;
 
 import java.util.*;
 
-public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implements MyMyStrategy {
+public final class ParametrizedTheStrategy extends MyMyStrategyAbstract implements MyMyStrategy {
 
-    int tickDepth = 300;
-    int mpt = 100;
+    public final StrategyParams p;
 
-    int planRecalculateFrequency = Integer.MAX_VALUE; //never
 
     Rules rules;
-
-    StrategyParams p = new StrategyParams();
-
-    public SingleKickGoalLahStrategy(boolean usePotentialGoals)  {
-        p.usePotentialGoals = usePotentialGoals;
-    }
-    public SingleKickGoalLahStrategy()  {
-        p.usePotentialGoals = false;
-    }
-
-
 
     Map<Integer, JumpCommand> jumpTick = new HashMap<>();//when touch floor - unset this
     Map<Integer, RobotMoveJumpPlan> thisTickPlans = new HashMap<>();//when touch floor - unset this
     Map<Integer, RobotMoveJumpPlan> previousTickPlans = new HashMap<>();
+
+    public ParametrizedTheStrategy(StrategyParams strategyParams) {
+        this.p = strategyParams;
+    }
 
     @Override
     public void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules) {
@@ -49,13 +39,13 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
         setBackToStablesForAll(myRobots);
 
         setOrUnsetJump(myRobots, currentTick);
-        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, ball.clone(), tickDepth, mpt);
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, ball.clone(), p.ballTickDepth, p.mpt);
 
         for (MyRobot myRobot : myRobots.values()) {
             if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, Vector3d.of(0.0, 1.0, 0.0)) > 0.99) {
                 //check previous
                 Optional<RobotMoveJumpPlan> previousPlan = Optional.ofNullable(previousTickPlans.get(myRobot.id));
-                boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
+                boolean recalculateAnyway = ((currentTick + 1) % p.planRecalculateFrequency == 0);
                 if(!recalculateAnyway && previousPlan.isPresent()) {
                     Optional<RobotMoveJumpPlan> recheckedPlan = LookAhead.robotMoveJumpGoalOptionsCheckPrevious(
                             previousPlan.get(), rules, myRobot.clone(), bt);
@@ -63,7 +53,7 @@ public final class SingleKickGoalLahStrategy extends MyMyStrategyAbstract implem
                     recheckedPlan.ifPresent(rmjplan -> thisTickPlans.put(myRobot.id, rmjplan));
 //                    System.out.println("Recalculated plan used");
                 } else {
-                    List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt, p);
+                    List<RobotMoveJumpPlan> rmjp = LookAhead.robotMoveJumpGoalOptions(rules, myRobot.clone(), bt, new StrategyParams());
                     if (!rmjp.isEmpty()) {
                         RobotMoveJumpPlan rmjplan = rmjp.get(0);
                         thisTickPlans.put(myRobot.id, rmjplan);
