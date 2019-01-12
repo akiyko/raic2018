@@ -17,6 +17,14 @@ public final class Position {
         this.z = z;
     }
 
+    public Position zeroY() {
+        return new Position(x,0,z);
+    }
+
+    public Vector3d toVector() {
+        return Vector3d.of(x,y,z);
+    }
+
     public static Vector3d minus(Position a, Position b) {
         return Vector3d.of(a.x - b.x, a.y - b.y, a.z - b.z);
     }

@@ -47,7 +47,7 @@ public class RobotNitroJumps {
         mr.velocity = Vector3d.of(0, 0, Constants.ROBOT_MAX_GROUND_SPEED);
         mr.action = new MyAction();
         mr.action.target_velocity = mr.velocity;
-//        mr.nitro = ticksDepth;//has nitro for all ticks
+        mr.nitro = ticksDepth;//has nitro for all ticks
 
         return robotJumpNitroTrace(rules, mr, ticksDepth, mpt, jumpSpeed, useNitroSinceTick, targetVelocityFun);
     }
@@ -56,7 +56,22 @@ public class RobotNitroJumps {
         Function<MyRobot, Vector3d> tangVelocity = r -> r.velocity.normalize().multiply(Constants.MAX_ENTITY_SPEED);
 
         return robotTraceFromMaxSpeedZeroPosToZ(
-                rules, ticksDepth, (int)Constants.MICROTICKS_PER_TICK, Constants.ROBOT_MAX_JUMP_SPEED, 1, tangVelocity);
+                rules, ticksDepth, (int)Constants.MICROTICKS_PER_TICK, Constants.ROBOT_MAX_JUMP_SPEED, 0, tangVelocity);
     }
 
+    //taj ==0 - jump at this tick
+    //speed should be max_groupnd_speed!!!
+    public static MyRobot robotPositionAfterJumpNitroTang(List<MyRobot> precalculated,
+                                                          Position jumpPosition, Vector3d preJumpVelocity,  int tickAfterJump) {
+
+
+        Vector3d precalcVelocity = Vector3d.of(0,0, Constants.ROBOT_MAX_GROUND_SPEED);
+        double thetha = Vector3d.angle2dBetween(precalcVelocity, preJumpVelocity);
+
+        MyRobot preAtTick = precalculated.get(tickAfterJump);
+
+        MyRobot res = preAtTick.rotate(thetha, jumpPosition, preAtTick.position, preAtTick.velocity);
+
+        return res;
+    }
 }

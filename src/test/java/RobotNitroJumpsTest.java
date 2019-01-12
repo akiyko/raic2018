@@ -13,6 +13,41 @@ public class RobotNitroJumpsTest {
     Rules rules = TestUtils.standardRules();
 
     @Test
+    public void testTangPrecalcRotate() throws Exception {
+        Position jumpPos = new Position(-20, Constants.ROBOT_RADIUS, -10);
+        Vector3d preJumpVelocity = Vector3d.of(10, 0, 40).normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+
+        MyRobot mr = new MyRobot();
+        mr.position = jumpPos;
+        mr.touch = true;
+        mr.touch_normal = Vector3d.of(0, 1, 0);
+        mr.velocity = Vector3d.of(10, 0, 40).normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+        mr.action = new MyAction();
+        mr.action.target_velocity = Vector3d.of(10, 0, 40).normalize().multiply(Constants.MAX_ENTITY_SPEED);
+
+        mr.nitro = 100;
+
+        List<MyRobot> robotTangPrecalc = RobotNitroJumps.robotTraceFromMaxSpeedZeroPosToZTangMaxJumpFirstTick(rules, 50);
+
+        for (int i = 1; i < 50; i++) {
+            if(i==1) {
+                mr.action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
+            }
+            mr.action.use_nitro = true;
+            mr.action.target_velocity = mr.velocity.normalize().multiply(Constants.MAX_ENTITY_SPEED);
+
+            Simulator.tickRobotOnly(rules, mr, Constants.MICROTICKS_PER_TICK);
+            MyRobot prec = RobotNitroJumps.robotPositionAfterJumpNitroTang(robotTangPrecalc, jumpPos, preJumpVelocity, i);
+
+            System.out.println("==============");
+            System.out.println(i + "s:" + mr);
+            System.out.println(i + "p: " + prec);
+            System.out.println("Pos diff: " + mr.position.minus(prec.position).length());
+            System.out.println("Velo diff: " + mr.velocity.minus(prec.velocity).length());
+        }
+    }
+
+    @Test
     public void testTang() throws Exception {
         List<MyRobot> robotTrace = RobotNitroJumps.robotTraceFromMaxSpeedZeroPosToZTangMaxJumpFirstTick(rules, 100);
 

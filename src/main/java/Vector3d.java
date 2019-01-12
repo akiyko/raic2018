@@ -63,13 +63,29 @@ public final class Vector3d {
     }
 
     /**
+     * v1.rotate(res) = v2
      * @param v1
      * @param v2
      * @return
      */
     public static double angle2dBetween(Vector3d v1, Vector3d v2) {
-        double theta = Math.acos(Vector3d.dot(v1.normalize(), v2.normalize()));
-        ...
+        Vector3d v1N = v1.normalize();
+        Vector3d v2N = v2.normalize();
+
+        double theta = Math.acos(Vector3d.dot(v1N, v2N));
+
+        Vector3d v2t = v1N.rotate(theta);
+        Vector3d v2tm = v1N.rotate(-theta);
+        Vector3d v2tp = v1N.rotate(Math.PI + theta);
+        if(v2t.doubleEquals(v2N)) {
+            return theta;
+        } else if(v2tm.doubleEquals(v2N)) {
+            return -theta;
+        } else if(v2tp.doubleEquals(v2tp)) {
+            return Math.PI+theta;
+        } else {
+            return Math.PI-theta;
+        }
     }
 
     public static double dot(Vector3d a, Vector3d b) {
@@ -90,6 +106,12 @@ public final class Vector3d {
 
     public static double diffSquare(Vector3d a, Vector3d b) {
         return sq(a.dx - b.dx) + sq(a.dy - b.dy) + sq(a.dz - b.dz);
+    }
+
+    public boolean doubleEquals(Vector3d b) {
+        return MathUtils.isZero(dx - b.dx)
+                && MathUtils.isZero(dy - b.dy)
+                && MathUtils.isZero(dz - b.dz);
     }
 
     public Vector3d negateZ() {

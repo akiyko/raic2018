@@ -14,6 +14,15 @@ public class MyRobot extends Entity {
     public Vector3d touch_normal;
     public double nitro;
 
+    public MyRobot rotate(double thetha, Position jumpPosition, Position prePosition, Vector3d preVelocity) {
+        MyRobot res = this.clone();
+
+        res.velocity = preVelocity.rotate(thetha);
+        res.position = jumpPosition.zeroY().plus(prePosition.toVector().rotate(thetha));
+
+        return res;
+    }
+
     public Robot toRobot(int id, int player_id, boolean isTeammate) {
         Robot r = new Robot();
         r.id = id;
