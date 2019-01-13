@@ -8,6 +8,7 @@ public class Constants {
     public static final double ROBOT_ACCELERATION = 100;
     public static final double ROBOT_NITRO_ACCELERATION = 30;
     public static final double ROBOT_MAX_GROUND_SPEED = 30;
+    public static final int ROBOT_MAX_GROUND_SPEED_I = 30;
     public static final double ROBOT_ARENA_E = 0;
     public static final double ROBOT_RADIUS = 1;
     public static final double ROBOT_MASS = 2;
@@ -33,5 +34,5 @@ public class Constants {
     public static final double GRAVITY = 30;
 
 
-    public static final double DOUBLE_ZERO = 0.000000001;
+    public static final double DOUBLE_ZERO = 0.00001;
 }

@@ -35,7 +35,7 @@ public class PositionTest {
     @Test
     public void testRotateRandom() throws Exception {
         Random r = new Random(0);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1_000_000; i++) {
             double dx1 = r.nextDouble();
             double dx2 = r.nextDouble();
             double dz1 = r.nextDouble();
@@ -48,14 +48,40 @@ public class PositionTest {
 
             Vector3d v2r = v1.rotate(thetha);
 
-            System.out.println(thetha);
-            System.out.println(v1);
-            System.out.println(v2);
-            System.out.println(v2r);
+//            System.out.println(thetha);
+//            System.out.println(v1);
+//            System.out.println(v2);
+//            System.out.println(v2r);
 
             assertTrue(v2r.doubleEquals(v2));
 
 
+        }
+
+    }
+
+    @Test
+    public void testRotateRandomSinCos() throws Exception {
+        Random r = new Random(0);
+        for (int i = 0; i < 10_000_000; i++) {
+            double dx1 = r.nextDouble();
+            double dx2 = r.nextDouble();
+            double dz1 = r.nextDouble();
+            double dz2 = r.nextDouble();
+
+            Vector3d v1 = Vector3d.of(dx1, 0, dz1).normalize();
+            Vector3d v2 = Vector3d.of(dx2, 0, dz2).normalize();
+
+            SinCos sc = Vector3d.sincos2dBetween(v1, v2);
+
+            Vector3d v2r = v1.rotate(sc);
+
+//            System.out.println(sc);
+//            System.out.println(v1);
+//            System.out.println(v2);
+//            System.out.println(v2r);
+
+            assertTrue(v2r.doubleEquals(v2));
         }
 
     }

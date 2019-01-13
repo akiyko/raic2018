@@ -23,6 +23,10 @@ public class MyRobot extends Entity {
         return res;
     }
 
+    public PV pv() {
+        return PV.of(position, velocity);
+    }
+
     public Robot toRobot(int id, int player_id, boolean isTeammate) {
         Robot r = new Robot();
         r.id = id;

@@ -27,13 +27,13 @@ public class RobotNitroJumpsTest {
 
         mr.nitro = 100;
 
-        List<MyRobot> robotTangPrecalc = RobotNitroJumps.robotTraceFromMaxSpeedZeroPosToZTangMaxJumpFirstTick(rules, 50);
+        List<MyRobot> robotTangPrecalc = RobotNitroJumps.robotTraceFromMaxSpeedZeroPosToZTangMaxJumpFirstTick(rules, 100);
 
-        for (int i = 1; i < 50; i++) {
+        for (int i = 1; i < 100; i++) {
             if(i==1) {
                 mr.action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
             }
-            mr.action.use_nitro = true;
+//            mr.action.use_nitro = true;
             mr.action.target_velocity = mr.velocity.normalize().multiply(Constants.MAX_ENTITY_SPEED);
 
             Simulator.tickRobotOnly(rules, mr, Constants.MICROTICKS_PER_TICK);

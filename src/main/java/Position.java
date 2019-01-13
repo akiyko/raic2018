@@ -1,3 +1,5 @@
+import javafx.geometry.Pos;
+
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
@@ -15,6 +17,10 @@ public final class Position {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+    //0 <= d <= 1
+    public static Position middlePos(Position p1, Position p2, double d) {
+        return p1.plus(p2.minus(p1).multiply(d));
     }
 
     public Position zeroY() {

@@ -435,7 +435,7 @@ public class Simulator {
         if (robot.action.use_nitro) {
             Vector3d target_velocity_change =
                     robot.action.target_velocity.minus(robot.velocity).clamp(robot.nitro * Constants.NITRO_POINT_VELOCITY_CHANGE);
-            if (target_velocity_change.length() > 0) {
+            if (target_velocity_change.length() > Constants.DOUBLE_ZERO) {
                 Vector3d acceleration = target_velocity_change.normalize().multiply(Constants.ROBOT_NITRO_ACCELERATION);
                 Vector3d velocity_change = acceleration.multiply(delta_time).clamp(target_velocity_change.length());
                 robot.velocity = robot.velocity.plus(velocity_change);

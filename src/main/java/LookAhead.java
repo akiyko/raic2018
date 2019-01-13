@@ -372,6 +372,51 @@ public class LookAhead {
         return afterJump;
     }
 
+
+    public static double tickCorrectionNoNitroV = 0.004999679486850317 / 28;
+    public static double tickCorrectionNitroV = 0.004999679486850317 / 30;
+
+    public static PV robotGroundMove(PV pvStart, Vector3d targetVelocityRequested, int ticks, boolean useNitro) {
+        if (ticks <= 0) {
+            return pvStart;
+        }
+
+        Vector3d targetVelocity = targetVelocityRequested.clamp(Constants.ROBOT_MAX_GROUND_SPEED);
+        Vector3d vdiff = targetVelocity.minus(pvStart.v);
+
+        double a = Constants.ROBOT_ACCELERATION;
+        if(useNitro) {
+            a += Constants.ROBOT_NITRO_ACCELERATION;
+        }
+
+        Vector3d amax = vdiff.normalize().multiply(a);
+
+        double ttillspeed = vdiff.length() / (a / Constants.TICKS_PER_SECOND);
+
+        double delta_time_corr = tickCorrectionNoNitroV;
+
+        if (ticks < ttillspeed) {
+            double delta_time = ((double) ticks) / Constants.TICKS_PER_SECOND;
+
+            Vector3d targetVelocityMid = pvStart.v.plus(amax.multiply(delta_time));
+            Position positionMid = pvStart.p.plus(pvStart.v.multiply(delta_time)).plus(amax.multiply(0.5 * delta_time * delta_time));
+
+            return PV.of(positionMid, targetVelocityMid);
+
+        } else {
+            double flatTimeInTicks = ticks - ttillspeed;
+            double delta_time = ttillspeed / Constants.TICKS_PER_SECOND;
+
+            Vector3d targetVelocityFin = pvStart.v.plus(amax.multiply(delta_time));
+            Position positionMid = pvStart.p.plus(pvStart.v.multiply(delta_time)).plus(amax.multiply(0.5 * delta_time * delta_time));
+
+            positionMid = positionMid.plus(targetVelocityFin.multiply(flatTimeInTicks / Constants.TICKS_PER_SECOND));
+
+            return PV.of(positionMid, targetVelocityFin);
+        }
+    }
+
+
     public static MyRobot robotGroundMove(MyRobot mr, Vector3d targetVelocityRequested, int ticks) {
         if (ticks <= 0) {
             return mr.clone();

@@ -17,6 +17,10 @@ public final class Vector3d {
         this.dz = dz;
     }
 
+    public static Vector3d middleVector(Vector3d v1, Vector3d v2, double d) {
+        return v1.plus(v2.minus(v1).multiply(d));
+    }
+
     public Vector3d zeroY() {
         return of(dx, 0, dz);
     }
@@ -62,6 +66,13 @@ public final class Vector3d {
         return of(x1, dy, z1);
     }
 
+    public Vector3d rotate(SinCos t) {
+        double x1 = dx * t.cos - dz * t.sin;
+        double z1 = dx * t.sin + dz * t.cos;
+
+        return of(x1, dy, z1);
+    }
+
     /**
      * v1.rotate(res) = v2
      * @param v1
@@ -85,6 +96,33 @@ public final class Vector3d {
             return Math.PI+theta;
         } else {
             return Math.PI-theta;
+        }
+    }
+
+    /**
+     * v1.rotate(res) = v2
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static SinCos sincos2dBetween(Vector3d v1, Vector3d v2) {
+        Vector3d v1N = v1.normalize();
+        Vector3d v2N = v2.normalize();
+
+        double cos = Vector3d.dot(v1N, v2N);
+        SinCos sc = SinCos.ofCos(cos);
+
+        Vector3d v2t = v1N.rotate(sc);
+        Vector3d v2tm = v1N.rotate(sc.negateCos());
+        Vector3d v2tp = v1N.rotate(sc.negateSin());
+        if(v2t.doubleEquals(v2N)) {
+            return sc;
+        } else if(v2tm.doubleEquals(v2N)) {
+            return sc.negateCos();
+        } else if(v2tp.doubleEquals(v2tp)) {
+            return sc.negateSin();
+        } else {
+            return sc.negateSinCos();
         }
     }
 
