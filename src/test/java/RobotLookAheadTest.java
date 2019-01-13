@@ -13,9 +13,82 @@ public class RobotLookAheadTest {
 
     Rules rules = TestUtils.standardRules();
 
+    RobotPrecalcPhysics phys = RobotPrecalcPhysics.calculate(rules);
+
+    @Test
+    public void testGroundBallFindMath() throws Exception {
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+//        MyRobot r1 = TestUtils.robotOnTheGround(new Position(0, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, 0));
+
+
+        double minAngle = -Math.PI;
+        double maxAngle = Math.PI;
+        int steps = 80;
+        int ticks = 300;
+        int mpt = 100;
+
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), ticks, mpt);
+//        BallTrace bt = LookAhead.ballUntouchedTraceSimulator(rules, myBall.clone(), ticks, mpt);
+        long start = System.currentTimeMillis();
+
+        BestMoveDouble bmd = RobotLookAhead.robotSeekForBallOnGround(rules, phys, r1.pv(), bt, -Math.PI, Math.PI, steps, 3, false);
+
+        System.out.println( bmd);
+
+
+        //simulate
+
+        PV pvStart = r1.pv();
+
+        r1.action = new MyAction();
+        Vector3d targetVeloGround = bmd.middleTargetVelocityAngleGround();
+
+        r1.action.target_velocity = targetVeloGround;
+        r1.nitro = 100;
+
+        int jumpTick = 71;
+        GamePlanResult gpr = RobotLookAhead.predictRobotBallFutureJump(rules, phys, bt, pvStart, targetVeloGround, false, false, jumpTick, 77);
+
+        for (int i = 1; i < 75; i++) {
+            r1.action.use_nitro = false;
+//            if (i < jumpTick + 1) {
+//                r.action.use_nitro = nitroOnground;
+//            }
+
+
+            if (i >= jumpTick + 1) {
+                r1.action.jump_speed = Constants.ROBOT_MAX_JUMP_SPEED;
+                r1.action.target_velocity = r1.velocity;//tang
+                r1.action.use_nitro = false;
+            }
+
+
+            Simulator.tick(rules, Collections.singletonList(r1), myBall, Collections.emptyList());
+
+
+            if(i > 70) {
+
+//            PV pvPredictred = RobotLookAhead.findRobotPvTang(phys, pvStart, targetVeloGround, false, nitroOonFly,
+//                    i, jumpTick);
+                System.out.println(i + "=============");
+
+                System.out.println(r1.position + " / " + r1.velocity);
+//                System.out.println(bt.ballTrace.get(i));
+                System.out.println(myBall);
+//            System.out.println(pvPredictred.p + " / " + pvPredictred.v);
+
+//            System.out.println("Position diff: " + pvPredictred.p.minus(r.position).length());
+//            System.out.println("Velocity diff: " + pvPredictred.v.minus(r.velocity).length());
+            }
+        }
+
+
+
+    }
+
     @Test
     public void testGroundMoveJumpPerf() throws Exception {
-        RobotPrecalcPhysics phys = RobotPrecalcPhysics.calculate(rules);
 
         MyRobot r = TestUtils.robotOnTheGround(new Position(0, 1, 0));
 
@@ -57,7 +130,6 @@ public class RobotLookAheadTest {
 
     @Test
     public void testGroundMaxSpeedJumpTangPrecision() throws Exception {
-        RobotPrecalcPhysics phys = RobotPrecalcPhysics.calculate(rules);
 
         MyRobot r = TestUtils.robotOnTheGround(new Position(0, 1, 0));
 

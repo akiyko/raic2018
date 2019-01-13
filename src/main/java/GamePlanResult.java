@@ -18,6 +18,7 @@ public class GamePlanResult {
 
    public Vector3d minToBallGround = MathUtils.MAX_VECTOR;
    public int minToBallGroundTick = Integer.MAX_VALUE;
+   public PV ballAfterColllision = null;
 
 
    public Vector3d minBallToOppGateCenter = MathUtils.MAX_VECTOR;
