@@ -48,12 +48,12 @@ public class RobotLookAhead {
                 beforeTouchTick = i - 1;
                 result.beforeBallTouchTick = beforeTouchTick;
 
-                if(jumpTick > beforeTouchTick) {
+                if (jumpTick > beforeTouchTick) {
                     break;
                 }
 
-                if(i > 0 ) {
-                    handleCollisionMath(ballTrace.ballTrace.get(i-1), ballTrace.ballTrace.get(i), mrAtPrevTick, mrAtTick);
+                if (i > 0) {
+                    handleCollisionMath(result, ballTrace.ballTrace.get(i - 1), ballTrace.ballTrace.get(i), mrAtPrevTick, mrAtTick);
                 }
 
                 break;
@@ -65,11 +65,48 @@ public class RobotLookAhead {
         return result;
     }
 
-    public static void handleCollisionMath(MyBall beforeTouch, MyBall afterTouch, PV rBeforeTouch, PV rAfterTouch) {
+    public static void handleCollisionMath(GamePlanResult gpr, MyBall beforeTouch, MyBall afterTouch, PV rBeforeTouch, PV rAfterTouch) {
+        double lenBefore = beforeTouch.position.minus(rBeforeTouch.p).length();
+        double lenAfter = afterTouch.position.minus(rAfterTouch.p).length();
+        double d = Constants.COLLIDE_JUMP_RADIUS - lenBefore / (lenAfter - lenBefore);
+
+        PV ballPvBefore = PV.of(beforeTouch.position, beforeTouch.velocity);
+        PV ballPvAfter = PV.of(afterTouch.position, afterTouch.velocity);
+
+        PV ballTouch = PV.middlePv(ballPvBefore, ballPvAfter, d);
+        PV rtouch = PV.middlePv(rBeforeTouch, rAfterTouch, d);
+
+        PV ballAfterCollision = collideBallAndRobot(rtouch, ballTouch);
+
         System.out.println("beforeTouch: " + beforeTouch);
         System.out.println("afterTouch: " + afterTouch);
         System.out.println("rbeforeTouch: " + rBeforeTouch);
         System.out.println("rafterTouch: " + rAfterTouch);
+
+        System.out.println("Ball after col:" + ballAfterCollision);
+    }
+
+    //returns ball PV right after touch
+    public static PV collideBallAndRobot(PV arobot, PV bball) {
+        Vector3d delta_position = Position.minus(bball.p, arobot.p);
+
+        double amass = Constants.ROBOT_MASS;
+        double bmass = Constants.BALL_MASS;
+
+        double distance = delta_position.length();
+        double k_a = (1 / amass) / ((1 / amass) + (1 / bmass));
+        double k_b = (1 / bmass) / ((1 / amass) + (1 / bmass));
+        Vector3d normal = delta_position.normalize();
+//        double delta_velocity = Vector3d.dot(b.velocity.minus(a.velocity), normal) - b.radiusChangeSpeed - a.radiusChangeSpeed;
+        double delta_velocity = Vector3d.dot(bball.v.minus(arobot.v), normal) - 0 - Constants.ROBOT_MAX_JUMP_SPEED;
+        if (delta_velocity < 0) {
+//                Vector3d impulse = normal.multiply((1 + random(MIN_HIT_E, MAX_HIT_E)) * delta_velocity); //TODO: testing
+            Vector3d impulse = normal.multiply((1 + 0.5 * (Constants.MIN_HIT_E + Constants.MAX_HIT_E)) * delta_velocity);
+//            Vector3d avelocity = a.velocity.plus(impulse.multiply(k_a));
+            Vector3d bvelocity = bball.v.minus(impulse.multiply(k_b));
+            return PV.of(bball.p, bvelocity);
+        }
+        return bball;
     }
 
 

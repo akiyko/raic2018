@@ -2,6 +2,8 @@
  * By no one on 17.12.2018.
  */
 public class Constants {
+
+    public static final double COLLIDE_JUMP_RADIUS = Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS;
     public static final double ROBOT_MIN_RADIUS = 1;
     public static final double ROBOT_MAX_RADIUS = 1.05;
     public static final double ROBOT_MAX_JUMP_SPEED = 15;
