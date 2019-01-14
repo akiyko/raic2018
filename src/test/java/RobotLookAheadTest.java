@@ -2,6 +2,7 @@ import model.Rules;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -14,6 +15,72 @@ public class RobotLookAheadTest {
     Rules rules = TestUtils.standardRules();
 
     RobotPrecalcPhysics phys = RobotPrecalcPhysics.calculate(rules);
+
+    @Test
+    public void testFindGoalPerformance() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
+        strategyParams.usePotentialGoals = true;
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        myBall.velocity = Vector3d.of(-10, 0, 0);
+
+        long start = System.currentTimeMillis();
+
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        int repeatCount = 10000;
+
+        for (int i = 0; i < repeatCount; i++) {
+            List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, r1, bt, strategyParams, false, false);
+        }
+        long total = System.currentTimeMillis() - start;
+        System.out.println("Average: " + (total / repeatCount) + "ms");
+    }
+
+    @Test
+    public void testFindGoal() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
+        strategyParams.usePotentialGoals = false;
+
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 1.5, -1));
+        myBall.velocity = Vector3d.of(-10, 0,0);
+
+        long start = System.currentTimeMillis();
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(
+                rules, phys, r1, bt, strategyParams, false, true);
+
+        System.out.println("Total rmjp: " + (System.currentTimeMillis() - start) + "ms");
+
+        if(!rmjp.isEmpty()) {
+            RobotMoveJumpPlan rmjplan = rmjp.get(0);
+            System.out.println(rmjplan);
+
+            //check same with simulate
+            for (int i = 1; i < 300; i++) {
+                try {
+                    MyAction action = new MyAction();
+                    if(i >= rmjplan.jumpTick) {
+                        action.jump_speed = rmjplan.jumpSpeed;
+                    }
+                    action.target_velocity = rmjplan.targetVelocity;
+                    r1.action = action;
+
+                    Simulator.tick(rules, Collections.singletonList(r1), myBall);
+
+                } catch (GoalScoredException e) {
+                    System.out.println("Goal at " + i + ", pos: " + myBall.position);
+                    break;
+
+                }
+            }
+
+        } else {
+            //no goals :(
+        }
+    }
 
     @Test
     public void testGroundBallFindMath() throws Exception {
@@ -49,6 +116,8 @@ public class RobotLookAheadTest {
 
         int jumpTick = 71;
         GamePlanResult gpr = RobotLookAhead.predictRobotBallFutureJump(rules, phys, bt, pvStart, targetVeloGround, false, false, jumpTick, 77);
+
+        System.out.println(gpr);
 
         for (int i = 1; i < 75; i++) {
             r1.action.use_nitro = false;

@@ -1,3 +1,4 @@
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import model.Action;
 import model.Arena;
 import model.Rules;
@@ -219,7 +220,7 @@ public class LookAhead {
             }
         }
 
-        if(strategyParams.usePotentialGoals) {
+        if (strategyParams.usePotentialGoals) {
 //            return resultPotential;
             return (result.isEmpty()) ? resultPotential : result;
         }
@@ -342,7 +343,7 @@ public class LookAhead {
             if (bg.oppGoalScoredTick > 0) {
                 result.oppGoalScored = (int) bg.oppGoalScoredTick + beforeTouchTick + 1;
             }
-            if(bg.potentialGoalScoredTick > 0) {
+            if (bg.potentialGoalScoredTick > 0) {
                 result.potentialGoalScoredTick = (int) bg.potentialGoalScoredTick + beforeTouchTick + 1;
             }
         }
@@ -385,7 +386,7 @@ public class LookAhead {
         Vector3d vdiff = targetVelocity.minus(pvStart.v);
 
         double a = Constants.ROBOT_ACCELERATION;
-        if(useNitro) {
+        if (useNitro) {
             a += Constants.ROBOT_NITRO_ACCELERATION;
         }
 
@@ -503,6 +504,101 @@ public class LookAhead {
         return result;
     }
 
+
+    public static BallGoal ballFlyUntouched(Rules rules, PV mb) {
+        double goal_z = rules.arena.depth / 2 + Constants.BALL_RADIUS;
+
+        if (MathUtils.isZero(mb.v.dz)) {
+            return new BallGoal();//no goals
+        }
+
+        double t;
+
+        if (mb.v.dz > 0) {
+            t = Math.abs((goal_z - mb.p.z) / mb.v.dz);
+        } else {
+            t = Math.abs((goal_z + mb.p.z) / mb.v.dz);
+        }
+
+        Position ballFinalPosition = ballPositionFlyBounce(mb, t, StrategyParams.BOUNCES);
+
+        if (ballFinalPosition.y < 0) {
+            return new BallGoal();
+        }
+
+
+        Dan danToArena = Simulator.dan_to_arena(ballFinalPosition, rules.arena);
+
+        BallGoal result = new BallGoal();
+        result.finalPosition = ballFinalPosition;
+
+        if (danToArena.distance > Constants.BALL_RADIUS) {
+            if (ballFinalPosition.z > 0) {
+                result.goalScoredTick = t * Constants.TICKS_PER_SECOND;
+            } else {
+                result.oppGoalScoredTick = t * Constants.TICKS_PER_SECOND;
+            }
+        }
+
+        if (ballFinalPosition.z > 0
+                && Math.abs(ballFinalPosition.x) < rules.arena.goal_width - Constants.BALL_RADIUS - 1) {//-1 for safety
+            result.potentialGoalScoredTick = t * Constants.TICKS_PER_SECOND;
+        }
+        return result;
+    }
+
+    public static Position ballPositionFly(PV mb, double t) {
+
+        Position flyPosition = ballPositionFlyJust(mb, t);
+        if (flyPosition.y < Constants.BALL_RADIUS) {
+            //do bounce once
+            double firstBounceTime = MathUtils.whenHitGround(mb.p.y, mb.v.dy);
+            if (firstBounceTime < 0) {
+                return flyPosition;
+            }
+
+            double afterBounceTime = t - firstBounceTime;
+
+            Position bouncePosition = ballPositionFlyJust(mb, firstBounceTime);
+            double vyBeforeBounce = mb.v.dy - firstBounceTime * Constants.GRAVITY;
+
+            double vyfterBounce = -vyBeforeBounce * Constants.BALL_ARENA_E;
+
+            PV bounceBall = PV.of(bouncePosition, Vector3d.of(mb.v.dx, vyfterBounce, mb.v.dz));
+
+            Position second = ballPositionFlyJust(bounceBall, afterBounceTime);
+
+            return second;
+
+        } else {
+            return flyPosition;
+        }
+    }
+
+    public static Position ballPositionFlyBounce(PV mb, double t, int maxBounce) {
+
+
+        double restT = t;
+
+        for (int i = 0; i < maxBounce; i++) {
+            Position flyPosition = ballPositionFlyJust(mb, restT);
+
+            double nextBounceTime = MathUtils.whenHitGround(mb.p.y, mb.v.dy);
+            if (nextBounceTime < 0) {
+                return flyPosition;
+            }
+
+            if (nextBounceTime > t) {
+                return flyPosition;
+            }
+
+            mb = ballSingleBounce(mb, nextBounceTime);
+            restT -= nextBounceTime;
+        }
+
+        return ballPositionFlyJust(mb, restT);
+    }
+
     public static Position ballPositionFly(MyBall mb, double t) {
 
         Position flyPosition = ballPositionFlyJust(mb, t);
@@ -533,6 +629,26 @@ public class LookAhead {
         }
     }
 
+
+    public static PV ballSingleBounce(PV mb, double t) {
+        double x = mb.p.x + t * mb.v.dx;
+        double z = mb.p.z + t * mb.v.dz;
+        double y = mb.p.y + t * mb.v.dy - 0.5 * Constants.GRAVITY * t * t;
+
+        double vyBeforeBounce = mb.v.dy - t * Constants.GRAVITY;
+
+        double vyfterBounce = -vyBeforeBounce * Constants.BALL_ARENA_E;
+
+        return PV.of(new Position(x, y, z), Vector3d.of(mb.v.dx, vyfterBounce, mb.v.dz));
+    }
+
+    public static Position ballPositionFlyJust(PV mb, double t) {
+        double x = mb.p.x + t * mb.v.dx;
+        double z = mb.p.z + t * mb.v.dz;
+        double y = mb.p.y + t * mb.v.dy - 0.5 * Constants.GRAVITY * t * t;
+
+        return new Position(x, y, z);
+    }
 
     public static Position ballPositionFlyJust(MyBall mb, double t) {
         double x = mb.position.x + t * mb.velocity.dx;

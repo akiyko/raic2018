@@ -1,5 +1,6 @@
 import model.Rules;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,117 @@ import java.util.Optional;
  */
 public class RobotLookAhead {
     public static final int touchTickWider = 15;
+
+    public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, RobotPrecalcPhysics ph, MyRobot myRobot,
+                                                                   BallTrace ballTrace, StrategyParams sp,
+                                                                   boolean useNitroOnGround,
+                                                                   boolean useNitroOnFly) {
+
+        double jumpSpeed = Constants.ROBOT_MAX_JUMP_SPEED;
+
+        double minLenToBallGround = Constants.ROBOT_MAX_RADIUS + Constants.BALL_RADIUS + 1; //because of nitro
+
+        BestMoveDouble bmd = RobotLookAhead.robotSeekForBallOnGround(rules, ph, myRobot.pv(), ballTrace,
+                -Math.PI, Math.PI, sp.seekSteps, minLenToBallGround, useNitroOnGround);
+
+        if (bmd.low == 0.0 && bmd.hi == 0.0) {//can't touch ball
+            return Collections.emptyList();
+        }
+
+        if(useNitroOnFly) {
+
+            //try to jump earlier - get more speed
+            for (int tickOffest = sp.ticksOffsetMin; tickOffest <= sp.ticksOffsetStart; tickOffest++) {
+                List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd,  sp.goalSteps,
+                        Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
+
+                if (!rmjp.isEmpty()) {
+                    return rmjp;
+                }
+            }
+
+        } else {
+            //try to jump later
+            for (int tickOffest = sp.ticksOffsetStart; tickOffest >= sp.ticksOffsetMin; tickOffest--) {
+                List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd,  sp.goalSteps,
+                        Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
+
+                if (!rmjp.isEmpty()) {
+                    return rmjp;
+                }
+            }
+        }
+
+
+        return Collections.emptyList();
+    }
+
+
+    public static List<RobotMoveJumpPlan> robotMoveJumpGooalOptions(Rules rules,
+                                                                    RobotPrecalcPhysics ph,
+                                                                    PV myRobot,
+                                                                    BallTrace ballTrace,
+                                                                    BestMoveDouble seekForBallGroundResult, long steps,
+                                                                    double jumpSpeed,
+                                                                    int jumpTickOffset,
+                                                                    boolean useNitroOnGround,
+                                                                    boolean useNitroOnFly,
+                                                                    StrategyParams strategyParams) {
+        List<RobotMoveJumpPlan> result = new ArrayList<>();
+        List<RobotMoveJumpPlan> resultPotential = new ArrayList<>();
+
+        //start from center, move to sides
+
+        double delta = 0.5 * (seekForBallGroundResult.hi - seekForBallGroundResult.low) / steps;
+
+        double mid = (seekForBallGroundResult.hi + seekForBallGroundResult.low) * 0.5;
+
+        int jumpTick = Math.min(seekForBallGroundResult.lowPlanResult.minToBallGroundTick,
+                seekForBallGroundResult.hiPlanResult.minToBallGroundTick) + jumpTickOffset;
+
+        for (int i = 0; i < steps; i++) {
+            double mul = (i % 2 == 0) ? 1.0 : -1.0;
+            double angle = mid + delta * mul * i;
+
+            Vector3d targetVelocity = MathUtils.robotGroundVelocity(angle);
+
+            GamePlanResult gpr = predictRobotBallFutureJump(rules, ph, ballTrace, myRobot, targetVelocity,
+                    useNitroOnGround, useNitroOnFly, jumpTick, seekForBallGroundResult.lowPlanResult.beforeBallTouchTick);
+
+            if (gpr.potentialGoalScoredTick > 0 && resultPotential.isEmpty()) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = jumpSpeed;
+                rmjp.jumpTick = jumpTick;
+                rmjp.targetVelocity = targetVelocity;
+
+                resultPotential.add(rmjp);
+            }
+
+            if (gpr.goalScoredTick > 0) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = jumpSpeed;
+                rmjp.jumpTick = jumpTick;
+                rmjp.targetVelocity = targetVelocity;
+
+                result.add(rmjp);
+
+                if (result.size() > 1) {
+                    //TODO: temporary, find only first goal
+
+                    break;
+                }
+            }
+        }
+
+        if (strategyParams.usePotentialGoals) {
+//            return resultPotential;
+            return (result.isEmpty()) ? resultPotential : result;
+        }
+
+        return result;
+    }
 
 
     public static GamePlanResult predictRobotBallFutureJump(Rules rules, RobotPrecalcPhysics ph,
@@ -21,7 +133,8 @@ public class RobotLookAhead {
         int beforeTouchTick = -1;
 
         PV mrAtPrevTick = null;
-        for (int i = -touchTickWider + baseBeforeTouchTick; i < touchTickWider + baseBeforeTouchTick; i++) {
+        for (int i = Math.max(-touchTickWider + baseBeforeTouchTick, 0);
+             i < Math.min(touchTickWider + baseBeforeTouchTick, ballTrace.ballTrace.size()); i++) {
             MyBall thisTickBall = ballTrace.ballTrace.get(i);
 
             PV mrAtTick = findRobotPvTang(ph, myRobotPv, targetVelocity, useNitroOnGround, useNitroOnJump, i, jumpTick);
@@ -53,7 +166,8 @@ public class RobotLookAhead {
                 }
 
                 if (i > 0) {
-                    handleCollisionMath(result, ballTrace.ballTrace.get(i - 1), ballTrace.ballTrace.get(i), mrAtPrevTick, mrAtTick);
+                    handleCollisionMath(rules, result, beforeTouchTick,
+                            ballTrace.ballTrace.get(i - 1), ballTrace.ballTrace.get(i), mrAtPrevTick, mrAtTick);
                 }
 
                 break;
@@ -65,10 +179,12 @@ public class RobotLookAhead {
         return result;
     }
 
-    public static void handleCollisionMath(GamePlanResult gpr, MyBall beforeTouch, MyBall afterTouch, PV rBeforeTouch, PV rAfterTouch) {
+    public static void handleCollisionMath(Rules rules, GamePlanResult result,
+                                           int beforeTouchTick,
+                                           MyBall beforeTouch, MyBall afterTouch, PV rBeforeTouch, PV rAfterTouch) {
         double lenBefore = beforeTouch.position.minus(rBeforeTouch.p).length();
         double lenAfter = afterTouch.position.minus(rAfterTouch.p).length();
-        double d = Constants.COLLIDE_JUMP_RADIUS - lenBefore / (lenAfter - lenBefore);
+        double d = (Constants.COLLIDE_JUMP_RADIUS - lenBefore) / (lenAfter - lenBefore);
 
         PV ballPvBefore = PV.of(beforeTouch.position, beforeTouch.velocity);
         PV ballPvAfter = PV.of(afterTouch.position, afterTouch.velocity);
@@ -78,12 +194,25 @@ public class RobotLookAhead {
 
         PV ballAfterCollision = collideBallAndRobot(rtouch, ballTouch);
 
-        System.out.println("beforeTouch: " + beforeTouch);
-        System.out.println("afterTouch: " + afterTouch);
-        System.out.println("rbeforeTouch: " + rBeforeTouch);
-        System.out.println("rafterTouch: " + rAfterTouch);
 
-        System.out.println("Ball after col:" + ballAfterCollision);
+        BallGoal bg = LookAhead.ballFlyUntouched(rules, ballAfterCollision);
+
+        result.ballFinalPosition = bg.finalPosition;
+        if (bg.goalScoredTick > 0) {
+            result.goalScoredTick = (int) bg.goalScoredTick + beforeTouchTick + 1;
+        }
+        if (bg.oppGoalScoredTick > 0) {
+            result.oppGoalScored = (int) bg.oppGoalScoredTick + beforeTouchTick + 1;
+        }
+        if(bg.potentialGoalScoredTick > 0) {
+            result.potentialGoalScoredTick = (int) bg.potentialGoalScoredTick + beforeTouchTick + 1;
+        }
+//        System.out.println("beforeTouch: " + beforeTouch);
+//        System.out.println("afterTouch: " + afterTouch);
+//        System.out.println("rbeforeTouch: " + rBeforeTouch);
+//        System.out.println("rafterTouch: " + rAfterTouch);
+//
+//        System.out.println("Ball after col:" + ballAfterCollision);
     }
 
     //returns ball PV right after touch
