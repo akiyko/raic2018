@@ -58,6 +58,8 @@ public final class TheStrategy extends MyMyStrategyAbstract implements MyMyStrat
                 if (!rmjp.isEmpty()) {
                     RobotMoveJumpPlan rmjplan = rmjp.get(0);
                     thisTickPlans.put(myRobot.id, rmjplan);
+
+                    System.out.println(currentTick + ": This tick plans:" + thisTickPlans);
                 }
             }
         }

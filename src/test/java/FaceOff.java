@@ -96,11 +96,14 @@ public class FaceOff {
 
             try {
 //                System.out.println(robots);
+                System.out.println(i + "=============");
                 Simulator.tick(rules, robots, myBall);
 
+                System.out.println("mraction:" + myrobots.get(0).action);
+
                 robots.forEach(r -> r.action = new MyAction());
-//                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
-//                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
+                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
+                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
             } catch(GoalScoredException e) {
                 if( e.getZ() > 0) {
 //                    System.out.println("Goal scored for me at tick " + i);
@@ -141,11 +144,11 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
+//        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
         MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
-        r1.id = 1;
+//        r1.id = 1;
         r2.id = 2;
-        return Arrays.asList(r1,r2);
+        return Arrays.asList(/*r1,*/r2);
     }
 
     public static List<MyRobot> oppRobots() {
