@@ -21,14 +21,14 @@ public class RobotLookAheadTest {
         StrategyParams strategyParams = new StrategyParams();
         strategyParams.usePotentialGoals = true;
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
-        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 4, -1));
         myBall.velocity = Vector3d.of(-10, 0, 0);
 
         long start = System.currentTimeMillis();
 
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
 
-        int repeatCount = 10000;
+        int repeatCount = 1000;
 
         for (int i = 0; i < repeatCount; i++) {
             List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, r1, bt, strategyParams, false, false);
@@ -42,15 +42,17 @@ public class RobotLookAheadTest {
         StrategyParams strategyParams = new StrategyParams();
         strategyParams.usePotentialGoals = false;
 
+        //RobotMoveJumpPlan{gamePlanResult=GamePlanResult{goalScoredTick=134, pgoalScoredTick=134, oppGoalScored=-1, minToBall={dx=1.0949159187738466, dy=0.5576782583335766, dz=2.166651463624758}, minToBallTick=73, minBallToOppGateCenter={dx=9.223372036854776E18, dy=9.223372036854776E18, dz=9.223372036854776E18}, ballFinalPosition={x=-2.8142497379704468, y=2.2929638281685674, z=41.99999999999999}, beforeTouchTick=72, minToBallGroundTick=73}, targetVelocity={dx=-3.057733673851502, dy=0.0, dz=29.843764252851795}, jumpSpeed=15.0, jumpTick=72}
+
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
-        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 1.5, -1));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
         myBall.velocity = Vector3d.of(-10, 0,0);
 
         long start = System.currentTimeMillis();
         BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
 
         List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(
-                rules, phys, r1, bt, strategyParams, false, true);
+                rules, phys, r1, bt, strategyParams, false, false);
 
         System.out.println("Total rmjp: " + (System.currentTimeMillis() - start) + "ms");
 
@@ -67,6 +69,7 @@ public class RobotLookAheadTest {
                     }
                     action.target_velocity = rmjplan.targetVelocity;
                     r1.action = action;
+//                    r1.action.use_nitro = true;
 
                     Simulator.tick(rules, Collections.singletonList(r1), myBall);
 

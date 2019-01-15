@@ -29,6 +29,14 @@ public class FaceOffTest {
 
     }
     @Test
+    public void testTheLahKickLahKick() throws Exception {
+        FaceOff faceOff = new FaceOff( new TheStrategy(), new SingleKickGoalLahStrategy(false));
+
+        faceOff.simulate();
+
+    }
+
+    @Test
     public void testLahKickLahKick() throws Exception {
         FaceOff faceOff = new FaceOff( new SingleKickGoalLahStrategy(false), new SingleKickGoalLahStrategy(false));
 

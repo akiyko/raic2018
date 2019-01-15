@@ -9,7 +9,7 @@ import java.util.Optional;
  * By no one on 12.01.2019.
  */
 public class RobotLookAhead {
-    public static final int touchTickWider = 15;
+    public static final int touchTickWider = 7;
 
     public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, RobotPrecalcPhysics ph, MyRobot myRobot,
                                                                    BallTrace ballTrace, StrategyParams sp,
@@ -26,33 +26,26 @@ public class RobotLookAhead {
         if (bmd.low == 0.0 && bmd.hi == 0.0) {//can't touch ball
             return Collections.emptyList();
         }
+        List<RobotMoveJumpPlan> prev = Collections.emptyList();
 
-        if(useNitroOnFly) {
+        //try to jump later
+        for (int tickOffest = sp.ticksOffsetStart; tickOffest >= sp.ticksOffsetMin; tickOffest--) {
+            List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd, sp.goalSteps,
+                    Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
 
-            //try to jump earlier - get more speed
-            for (int tickOffest = sp.ticksOffsetMin; tickOffest <= sp.ticksOffsetStart; tickOffest++) {
-                List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd,  sp.goalSteps,
-                        Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
-
-                if (!rmjp.isEmpty()) {
-                    return rmjp;
-                }
+            if(!prev.isEmpty() && rmjp.isEmpty()) {
+                return prev;
             }
 
-        } else {
-            //try to jump later
-            for (int tickOffest = sp.ticksOffsetStart; tickOffest >= sp.ticksOffsetMin; tickOffest--) {
-                List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd,  sp.goalSteps,
-                        Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
-
-                if (!rmjp.isEmpty()) {
-                    return rmjp;
-                }
+            if(!prev.isEmpty() && !rmjp.isEmpty()
+                    && prev.get(0).gamePlanResult.goalScoredTick < rmjp.get(0).gamePlanResult.goalScoredTick) {
+                return prev;
             }
+
+            prev = rmjp;
         }
 
-
-        return Collections.emptyList();
+        return prev;
     }
 
 
@@ -75,8 +68,9 @@ public class RobotLookAhead {
 
         double mid = (seekForBallGroundResult.hi + seekForBallGroundResult.low) * 0.5;
 
-        int jumpTick = Math.min(seekForBallGroundResult.lowPlanResult.minToBallGroundTick,
-                seekForBallGroundResult.hiPlanResult.minToBallGroundTick) + jumpTickOffset;
+        int jumpTick = seekForBallGroundResult.optimalPlanResult.minToBallGroundTick + jumpTickOffset;
+
+        RobotMoveJumpPlan fastestGoal = null;
 
         for (int i = 0; i < steps; i++) {
             double mul = (i % 2 == 0) ? 1.0 : -1.0;
@@ -85,7 +79,7 @@ public class RobotLookAhead {
             Vector3d targetVelocity = MathUtils.robotGroundVelocity(angle);
 
             GamePlanResult gpr = predictRobotBallFutureJump(rules, ph, ballTrace, myRobot, targetVelocity,
-                    useNitroOnGround, useNitroOnFly, jumpTick, seekForBallGroundResult.lowPlanResult.beforeBallTouchTick);
+                    useNitroOnGround, useNitroOnFly, jumpTick, seekForBallGroundResult.optimalPlanResult.minToBallGroundTick);
 
             if (gpr.potentialGoalScoredTick > 0 && resultPotential.isEmpty()) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
@@ -104,14 +98,22 @@ public class RobotLookAhead {
                 rmjp.jumpTick = jumpTick;
                 rmjp.targetVelocity = targetVelocity;
 
-                result.add(rmjp);
+//                result.add(rmjp);
 
-                if (result.size() > 1) {
-                    //TODO: temporary, find only first goal
-
-                    break;
+                if(fastestGoal == null ||
+                        fastestGoal.gamePlanResult.goalScoredTick > rmjp.gamePlanResult.goalScoredTick) {
+                    fastestGoal = rmjp;
                 }
+//                if (result.size() > 1) {
+//                    //TODO: temporary, find only first goal
+//
+//                    break;
+//                }
             }
+        }
+
+        if(fastestGoal != null) {
+            result.add(fastestGoal);
         }
 
         if (strategyParams.usePotentialGoals) {
@@ -165,7 +167,7 @@ public class RobotLookAhead {
                     break;
                 }
 
-                if (i > 0) {
+                if (i > 0 && mrAtPrevTick != null) {
                     handleCollisionMath(rules, result, beforeTouchTick,
                             ballTrace.ballTrace.get(i - 1), ballTrace.ballTrace.get(i), mrAtPrevTick, mrAtTick);
                 }
@@ -249,8 +251,10 @@ public class RobotLookAhead {
 
         Optional<Double> minAngleConditionMatched = Optional.empty();
         Optional<Double> maxAngleConditionMatched = Optional.empty();
+        Optional<Double> optAngleConditionMatched = Optional.empty();
         GamePlanResult low = null;
         GamePlanResult high = null;
+        GamePlanResult optimal = null;
 
 
         for (int i = 0; i <= steps; i++) {
@@ -260,6 +264,13 @@ public class RobotLookAhead {
 
             GamePlanResult res = predictRobotBallFutureGround(rules, ph, ballTrace, myRobotPvAtStart, targetVelocity,
                     useNitroOnGround);
+
+            if(optimal == null || optimal.beforeBallTouchTick < 0 ||
+                    res.beforeBallTouchTick > 0 && res.beforeBallTouchTick < optimal.beforeBallTouchTick) {
+                optimal = res;
+                optAngleConditionMatched = Optional.of(minAngle + dangle * i);
+
+            }
 
             if (res.minToBallGround.length() < minLenToBallRequired) {
                 if (!minAngleConditionMatched.isPresent()) {
@@ -277,6 +288,9 @@ public class RobotLookAhead {
 
         bestMove.hiPlanResult = high;
         bestMove.hi = maxAngleConditionMatched.orElse(0.0);
+
+        bestMove.optimalPlanResult = optimal;
+        bestMove.optimal = optAngleConditionMatched.orElse(0.0);
 
         return bestMove;
     }

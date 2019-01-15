@@ -54,12 +54,12 @@ public final class TheStrategy extends MyMyStrategyAbstract implements MyMyStrat
                 boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
 
                 List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, myRobot.clone(), bt, p,
-                        false, false);
+                        true, true);
                 if (!rmjp.isEmpty()) {
                     RobotMoveJumpPlan rmjplan = rmjp.get(0);
                     thisTickPlans.put(myRobot.id, rmjplan);
 
-                    System.out.println(currentTick + ": This tick plans:" + thisTickPlans);
+//                    System.out.println(currentTick + ": This tick plans:" + thisTickPlans);
                 }
             }
         }
@@ -82,6 +82,7 @@ public final class TheStrategy extends MyMyStrategyAbstract implements MyMyStrat
 
                 int id = bestGoalPlan.getKey();
                 myRobots.get(id).action.target_velocity = thisTickPlans.get(id).targetVelocity;
+                myRobots.get(id).action.use_nitro = true;
             }
         }
 //

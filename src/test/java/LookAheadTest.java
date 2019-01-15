@@ -292,7 +292,7 @@ public class LookAheadTest {
         strategyParams.usePotentialGoals = true;
 
         MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
-        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 4, -1));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
         myBall.velocity = Vector3d.of(-10, 0,0);
 
         long start = System.currentTimeMillis();

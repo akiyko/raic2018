@@ -6,7 +6,7 @@ import java.util.*;
  * By no one on 23.12.2018.
  */
 public class FaceOff {
-//    public static final int GAME_TICKS = 18_000;
+    //    public static final int GAME_TICKS = 18_000;
     public static final int GAME_TICKS = 5000;
 
     private MyMyStrategy myStrategy;
@@ -44,7 +44,7 @@ public class FaceOff {
 
         for (int i = 0; i < GAME_TICKS; i++) {
 //            System.out.println("TICK " + i + " ============================================");
-            if(gamestart) {
+            if (gamestart) {
                 robots = new ArrayList<>();
                 myrobots = myRobots();
                 opprobots = oppRobots();
@@ -53,9 +53,10 @@ public class FaceOff {
                 robots.addAll(myrobots);
                 robots.addAll(opprobots);
 
-                myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, 0));
+                myBall = TestUtils.ballInTheAir(new Position(0, MathUtils.random(Constants.BALL_RADIUS * 1.1, Constants.BALL_RADIUS * 4), 0));
 
                 gamestart = false;
+
             }
 
             Map<Integer, MyRobot> myRobotMap = toMapClone(myrobots);
@@ -64,7 +65,7 @@ public class FaceOff {
             Map<Integer, MyRobot> myRobotMapNegateZ = toMapCloneNegateZ(myrobots);
             Map<Integer, MyRobot> oppRobMapNegateZ = toMapCloneNegateZ(opprobots);
 
-            myStrategy.act(myRobotMap, oppRobMap, myBall, arena, i);
+            myStrategy.act(myRobotMap, oppRobMap, myBall.clone(), arena, i);
             opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena, i);
 
 //            myRobotMap.forEach((id, mr) -> {
@@ -74,7 +75,7 @@ public class FaceOff {
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
                 myrobots.stream()
-                        .filter(r->r.id == entry.getKey())
+                        .filter(r -> r.id == entry.getKey())
                         .findAny()
                         .orElse(null)
                         .action = entry.getValue().action;
@@ -82,9 +83,9 @@ public class FaceOff {
             }
             for (Map.Entry<Integer, MyRobot> entry : oppRobMapNegateZ.entrySet()) {
                 opprobots.stream()
-                        .filter(r->r.id == entry.getKey())
+                        .filter(r -> r.id == entry.getKey())
                         .findAny()
-                        .ifPresent(r-> {
+                        .ifPresent(r -> {
                             r.action = entry.getValue().action;
                             r.action.target_velocity = r.action.target_velocity.negateZ();
                         });
@@ -97,6 +98,10 @@ public class FaceOff {
             try {
 //                System.out.println(robots);
                 System.out.println(i + "=============");
+                for (MyRobot robot : robots) {//TODO: test nitro always available
+                    robot.nitro = 100;
+                }
+
                 Simulator.tick(rules, robots, myBall);
 
                 System.out.println("mraction:" + myrobots.get(0).action);
@@ -104,13 +109,13 @@ public class FaceOff {
                 robots.forEach(r -> r.action = new MyAction());
                 System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
                 System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
-            } catch(GoalScoredException e) {
-                if( e.getZ() > 0) {
+            } catch (GoalScoredException e) {
+                if (e.getZ() > 0) {
 //                    System.out.println("Goal scored for me at tick " + i);
-                    myGoals ++;
+                    myGoals++;
                 } else {
 //                    System.out.println("Goal scored for opponent at tick " + i);
-                    oppGoals ++;
+                    oppGoals++;
                 }
 
                 gamestart = true;
@@ -144,9 +149,9 @@ public class FaceOff {
     }
 
     public static List<MyRobot> myRobots() {
-//        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
+        MyRobot r1 = TestUtils.robotInTheAir(new Position(10, 2, -30));
         MyRobot r2 = TestUtils.robotInTheAir(new Position(-10, 2, -30));
-//        r1.id = 1;
+        r1.id = 1;
         r2.id = 2;
         return Arrays.asList(/*r1,*/r2);
     }
@@ -157,7 +162,7 @@ public class FaceOff {
         r1.id = 3;
         r2.id = 4;
 
-        return Arrays.asList(r1,r2);
+        return Arrays.asList(r1, r2);
     }
 
     public static Rules rules(Arena arena) {
@@ -170,7 +175,6 @@ public class FaceOff {
 //        rules.seed
 
 
-
         return rules;
 
     }
@@ -181,8 +185,6 @@ public class FaceOff {
 
         return game;
     }
-
-
 
 
 }
