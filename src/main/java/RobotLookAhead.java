@@ -71,6 +71,7 @@ public class RobotLookAhead {
         int jumpTick = seekForBallGroundResult.optimalPlanResult.minToBallGroundTick + jumpTickOffset;
 
         RobotMoveJumpPlan fastestGoal = null;
+        RobotMoveJumpPlan save = null;
 
         for (int i = 0; i < steps; i++) {
             double mul = (i % 2 == 0) ? 1.0 : -1.0;
@@ -104,16 +105,24 @@ public class RobotLookAhead {
                         fastestGoal.gamePlanResult.goalScoredTick > rmjp.gamePlanResult.goalScoredTick) {
                     fastestGoal = rmjp;
                 }
-//                if (result.size() > 1) {
-//                    //TODO: temporary, find only first goal
-//
-//                    break;
-//                }
             }
+            if(save == null && ballTrace.oppGoalScoredTick > 0 && fastestGoal == null && gpr.oppGoalScored < 0) {
+                RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+                rmjp.gamePlanResult = gpr;
+                rmjp.jumpSpeed = jumpSpeed;
+                rmjp.jumpTick = jumpTick;
+                rmjp.targetVelocity = targetVelocity;
+                rmjp.gamePlanResult.goalScoredTick = Integer.MAX_VALUE / 2;
+
+                save = rmjp;
+            }
+
         }
 
         if(fastestGoal != null) {
             result.add(fastestGoal);
+        } else if(save != null){
+            result.add(save);
         }
 
         if (strategyParams.usePotentialGoals) {
