@@ -4,6 +4,7 @@
  */
 public class StrategyParams {
     public static final int BOUNCES = 3;
+    public static final int MAX_GOAL_TICK = 300;
 
     public int mpt = 100;
     public int ballTickDepth = 300;

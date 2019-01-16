@@ -17,6 +17,54 @@ public class RobotLookAheadTest {
     RobotPrecalcPhysics phys = RobotPrecalcPhysics.calculate(rules);
 
     @Test
+    public void testDefendGoal() throws Exception {
+        StrategyParams strategyParams = new StrategyParams();
+        strategyParams.usePotentialGoals = false;
+
+        //RobotMoveJumpPlan{gamePlanResult=GamePlanResult{goalScoredTick=134, pgoalScoredTick=134, oppGoalScored=-1, minToBall={dx=1.0949159187738466, dy=0.5576782583335766, dz=2.166651463624758}, minToBallTick=73, minBallToOppGateCenter={dx=9.223372036854776E18, dy=9.223372036854776E18, dz=9.223372036854776E18}, ballFinalPosition={x=-2.8142497379704468, y=2.2929638281685674, z=41.99999999999999}, beforeTouchTick=72, minToBallGroundTick=73}, targetVelocity={dx=-3.057733673851502, dy=0.0, dz=29.843764252851795}, jumpSpeed=15.0, jumpTick=72}
+
+        MyRobot r1 = TestUtils.robotOnTheGround(new Position(-10, 1.0, -35));
+        MyBall myBall = TestUtils.ballInTheAir(new Position(0, Constants.BALL_RADIUS * 2, -1));
+        myBall.velocity = Vector3d.of(0, 10, -30);
+
+        long start = System.currentTimeMillis();
+        BallTrace bt = LookAhead.ballUntouchedTraceOptimized(rules, myBall.clone(), 300, 100);
+
+        List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(
+                rules, phys, r1, bt, strategyParams, false, false);
+
+        System.out.println("Total rmjp: " + (System.currentTimeMillis() - start) + "ms");
+
+        if(!rmjp.isEmpty()) {
+            RobotMoveJumpPlan rmjplan = rmjp.get(0);
+            System.out.println(rmjplan);
+
+            //check same with simulate
+            for (int i = 1; i < 300; i++) {
+                try {
+                    MyAction action = new MyAction();
+                    if(i >= rmjplan.jumpTick) {
+                        action.jump_speed = rmjplan.jumpSpeed;
+                    }
+                    action.target_velocity = rmjplan.targetVelocity;
+                    r1.action = action;
+//                    r1.action.use_nitro = true;
+
+                    Simulator.tick(rules, Collections.singletonList(r1), myBall);
+
+                } catch (GoalScoredException e) {
+                    System.out.println("Goal at " + i + ", pos: " + myBall.position);
+                    break;
+
+                }
+            }
+
+        } else {
+            //no goals :(
+        }
+    }
+
+    @Test
     public void testFindGoalPerformance() throws Exception {
         StrategyParams strategyParams = new StrategyParams();
         strategyParams.usePotentialGoals = true;

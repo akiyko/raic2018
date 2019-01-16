@@ -82,17 +82,17 @@ public class RobotLookAhead {
             GamePlanResult gpr = predictRobotBallFutureJump(rules, ph, ballTrace, myRobot, targetVelocity,
                     useNitroOnGround, useNitroOnFly, jumpTick, seekForBallGroundResult.optimalPlanResult.minToBallGroundTick);
 
-            if (gpr.potentialGoalScoredTick > 0 && resultPotential.isEmpty()) {
+            if (gpr.potentialGoalScoredTick > 0 && gpr.potentialGoalScoredTick < StrategyParams.MAX_GOAL_TICK && resultPotential.isEmpty()) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
                 rmjp.gamePlanResult = gpr;
                 rmjp.jumpSpeed = jumpSpeed;
                 rmjp.jumpTick = jumpTick;
                 rmjp.targetVelocity = targetVelocity;
 
-                resultPotential.add(rmjp);
+//                resultPotential.add(rmjp); //no 'potential goals'
             }
 
-            if (gpr.goalScoredTick > 0) {
+            if (gpr.goalScoredTick > 0 && gpr.goalScoredTick < StrategyParams.MAX_GOAL_TICK) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
                 rmjp.gamePlanResult = gpr;
                 rmjp.jumpSpeed = jumpSpeed;
@@ -116,7 +116,6 @@ public class RobotLookAhead {
 
                 save = rmjp;
             }
-
         }
 
         if(fastestGoal != null) {

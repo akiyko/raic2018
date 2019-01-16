@@ -22,8 +22,6 @@ public class StrategyWrapper implements Strategy {
 
     @Override
     public void act(Robot me, Rules rules, Game game, Action action) {
-
-
         if(!myMyStrategy.isTickComputed(game.current_tick)) {
             Map<Integer, MyRobot> myRobots = Arrays.stream(game.robots).filter(r -> r.is_teammate)
                     .map(MyRobot::fromRobot)
@@ -33,7 +31,7 @@ public class StrategyWrapper implements Strategy {
                     .map(MyRobot::fromRobot)
                     .collect(Collectors.toMap(r -> r.id, Function.identity()));
 
-            myMyStrategy.computeTickLogic(game.current_tick, myRobots, oppRobots, MyBall.fromBall(game.ball), rules);
+            myMyStrategy.computeTick(game.current_tick, myRobots, oppRobots, MyBall.fromBall(game.ball), rules);
         }
 
         Action act = myMyStrategy.act(me.id);
