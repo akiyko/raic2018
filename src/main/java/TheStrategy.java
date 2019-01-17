@@ -54,7 +54,7 @@ public final class TheStrategy extends MyMyStrategyAbstract implements MyMyStrat
                 boolean recalculateAnyway = ((currentTick + 1) % planRecalculateFrequency == 0);
 
                 List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, myRobot.clone(), bt, p,
-                        true, true);
+                        false, true);
                 if (!rmjp.isEmpty()) {
                     RobotMoveJumpPlan rmjplan = rmjp.get(0);
                     thisTickPlans.put(myRobot.id, rmjplan);

@@ -3,7 +3,7 @@
  * @since 1/11/2019.
  */
 public class StrategyParams {
-    public static final int BOUNCES = 3;
+    public static final int BOUNCES = 2;
     public static final int MAX_GOAL_TICK = 300;
 
     public int mpt = 100;
@@ -15,4 +15,8 @@ public class StrategyParams {
     public int goalSteps = 250;
     public int ticksOffsetMin = -10;
     public int ticksOffsetStart = 1;//
+
+    public int useNitroOnGroundAmount = 25;
+    public int useNitroOnFlyAmount = 50;
+    public static int fewTickMore = 4;
 }

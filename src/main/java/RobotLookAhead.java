@@ -12,6 +12,15 @@ public class RobotLookAhead {
     public static final int touchTickWider = 7;
 
     public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, RobotPrecalcPhysics ph, MyRobot myRobot,
+                                                                   BallTrace ballTrace, StrategyParams sp) {
+        boolean useNitroOnGround = myRobot.nitro > sp.useNitroOnGroundAmount;
+        boolean useNitroOnFly = myRobot.nitro > sp.useNitroOnFlyAmount;
+
+        return robotMoveJumpGoalOptions(rules, ph, myRobot, ballTrace, sp, useNitroOnGround, useNitroOnFly);
+    }
+
+
+    public static List<RobotMoveJumpPlan> robotMoveJumpGoalOptions(Rules rules, RobotPrecalcPhysics ph, MyRobot myRobot,
                                                                    BallTrace ballTrace, StrategyParams sp,
                                                                    boolean useNitroOnGround,
                                                                    boolean useNitroOnFly) {
@@ -32,6 +41,8 @@ public class RobotLookAhead {
         for (int tickOffest = sp.ticksOffsetStart; tickOffest >= sp.ticksOffsetMin; tickOffest--) {
             List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGooalOptions(rules, ph, myRobot.pv(), ballTrace, bmd, sp.goalSteps,
                     Constants.ROBOT_MAX_JUMP_SPEED, tickOffest, useNitroOnGround, useNitroOnFly, sp);
+            rmjp.forEach(r -> r.useNitroOnGround = useNitroOnGround);
+            rmjp.forEach(r -> r.useNitroOnFly = useNitroOnFly);
 
             if(!prev.isEmpty() && rmjp.isEmpty()) {
                 return prev;

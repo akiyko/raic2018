@@ -15,6 +15,8 @@ public class FaceOff {
     private Arena arena = TestUtils.standardArena();
     private Rules rules = TestUtils.standardRules();
 
+    public boolean unlimitedNitro;
+
     public FaceOff(MyMyStrategy myStrategy, MyMyStrategy opponentStrategy) {
         this.myStrategy = myStrategy;
         this.opponentStrategy = opponentStrategy;
@@ -98,8 +100,10 @@ public class FaceOff {
             try {
 //                System.out.println(robots);
                 System.out.println(i + "=============");
-                for (MyRobot robot : robots) {//TODO: test nitro always available
-                    robot.nitro = 100;
+                if(unlimitedNitro) {
+                    for (MyRobot robot : robots) {//TODO: test nitro always available
+                        robot.nitro = 100;
+                    }
                 }
 
                 Simulator.tick(rules, robots, myBall);
@@ -153,7 +157,7 @@ public class FaceOff {
         MyRobot r2 = TestUtils.robotOnTheGround(new Position(-10, 1, -30));
         r1.id = 1;
         r2.id = 2;
-        return Arrays.asList(/*r1,*/r2);
+        return Arrays.asList(r1, r2);
     }
 
     public static List<MyRobot> oppRobots() {
