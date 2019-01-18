@@ -44,11 +44,11 @@ public class RobotLookAhead {
             rmjp.forEach(r -> r.useNitroOnGround = useNitroOnGround);
             rmjp.forEach(r -> r.useNitroOnFly = useNitroOnFly);
 
-            if(!prev.isEmpty() && rmjp.isEmpty()) {
+            if (!prev.isEmpty() && rmjp.isEmpty()) {
                 return prev;
             }
 
-            if(!prev.isEmpty() && !rmjp.isEmpty()
+            if (!prev.isEmpty() && !rmjp.isEmpty()
                     && prev.get(0).gamePlanResult.goalScoredTick < rmjp.get(0).gamePlanResult.goalScoredTick) {
                 return prev;
             }
@@ -57,6 +57,77 @@ public class RobotLookAhead {
         }
 
         return prev;
+    }
+
+    public static Optional<RobotMoveJumpPlan> robotMoveJumpGooalOptionsCheckPrevious(Rules rules,
+                                                                                     RobotPrecalcPhysics ph,
+                                                                                     PV myRobot,
+                                                                                     BallTrace ballTrace,
+                                                                                     RobotMoveJumpPlan prev,
+                                                                                     StrategyParams strategyParams) {
+        Optional<RobotMoveJumpPlan> result = Optional.empty();
+        Optional<RobotMoveJumpPlan> resultPotential = Optional.empty();
+
+        //start from center, move to sides
+
+        RobotMoveJumpPlan fastestGoal = null;
+        RobotMoveJumpPlan save = null;
+
+
+        Vector3d targetVelocity = prev.targetVelocity;
+        int jumpTick = prev.jumpTick - 1;
+
+        GamePlanResult gpr = predictRobotBallFutureJump(rules, ph, ballTrace, myRobot, targetVelocity,
+                prev.useNitroOnGround, prev.useNitroOnFly, jumpTick, prev.gamePlanResult.minToBallGroundTick - 1);
+
+        if (gpr.potentialGoalScoredTick > 0 && gpr.potentialGoalScoredTick < StrategyParams.MAX_GOAL_TICK && !resultPotential.isPresent()) {
+            RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+            rmjp.gamePlanResult = gpr;
+            rmjp.jumpSpeed = prev.jumpSpeed;
+            rmjp.jumpTick = jumpTick;
+            rmjp.targetVelocity = targetVelocity;
+
+            resultPotential = Optional.of(rmjp); //no 'potential goals'
+        }
+
+        if (gpr.goalScoredTick > 0 && gpr.goalScoredTick < StrategyParams.MAX_GOAL_TICK) {
+            RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+            rmjp.gamePlanResult = gpr;
+            rmjp.jumpSpeed = prev.jumpSpeed;
+            rmjp.jumpTick = jumpTick;
+            rmjp.targetVelocity = targetVelocity;
+
+//                result.add(rmjp);
+
+            if (fastestGoal == null ||
+                    fastestGoal.gamePlanResult.goalScoredTick > rmjp.gamePlanResult.goalScoredTick) {
+                fastestGoal = rmjp;
+            }
+        }
+        if (save == null && ballTrace.oppGoalScoredTick > 0 && fastestGoal == null && gpr.oppGoalScored < 0) {
+            RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
+            rmjp.gamePlanResult = gpr;
+            rmjp.jumpSpeed = prev.jumpSpeed;
+            rmjp.jumpTick = jumpTick;
+            rmjp.targetVelocity = targetVelocity;
+            rmjp.gamePlanResult.goalScoredTick = Integer.MAX_VALUE / 2;
+
+            save = rmjp;
+        }
+
+
+        if (fastestGoal != null) {
+            result = Optional.of(fastestGoal);
+        } else if (save != null) {
+            result = Optional.of(save);
+        }
+
+        if (strategyParams.usePotentialGoals) {
+//            return resultPotential;
+            return (result.isPresent()) ? result : resultPotential;
+        }
+
+        return result;
     }
 
 
@@ -100,7 +171,7 @@ public class RobotLookAhead {
                 rmjp.jumpTick = jumpTick;
                 rmjp.targetVelocity = targetVelocity;
 
-//                resultPotential.add(rmjp); //no 'potential goals'
+                resultPotential.add(rmjp); //no 'potential goals'
             }
 
             if (gpr.goalScoredTick > 0 && gpr.goalScoredTick < StrategyParams.MAX_GOAL_TICK) {
@@ -112,12 +183,12 @@ public class RobotLookAhead {
 
 //                result.add(rmjp);
 
-                if(fastestGoal == null ||
+                if (fastestGoal == null ||
                         fastestGoal.gamePlanResult.goalScoredTick > rmjp.gamePlanResult.goalScoredTick) {
                     fastestGoal = rmjp;
                 }
             }
-            if(save == null && ballTrace.oppGoalScoredTick > 0 && fastestGoal == null && gpr.oppGoalScored < 0) {
+            if (save == null && ballTrace.oppGoalScoredTick > 0 && fastestGoal == null && gpr.oppGoalScored < 0) {
                 RobotMoveJumpPlan rmjp = new RobotMoveJumpPlan();
                 rmjp.gamePlanResult = gpr;
                 rmjp.jumpSpeed = jumpSpeed;
@@ -129,9 +200,9 @@ public class RobotLookAhead {
             }
         }
 
-        if(fastestGoal != null) {
+        if (fastestGoal != null) {
             result.add(fastestGoal);
-        } else if(save != null){
+        } else if (save != null) {
             result.add(save);
         }
 
@@ -150,6 +221,7 @@ public class RobotLookAhead {
                                                             int jumpTick,
                                                             int baseBeforeTouchTick) {
         GamePlanResult result = new GamePlanResult();
+        result.oppGoalScored = ballTrace.oppGoalScoredTick;
 
         int beforeTouchTick = -1;
 
@@ -224,8 +296,10 @@ public class RobotLookAhead {
         }
         if (bg.oppGoalScoredTick > 0) {
             result.oppGoalScored = (int) bg.oppGoalScoredTick + beforeTouchTick + 1;
+        } else {
+            result.oppGoalScored = -1;
         }
-        if(bg.potentialGoalScoredTick > 0) {
+        if (bg.potentialGoalScoredTick > 0) {
             result.potentialGoalScoredTick = (int) bg.potentialGoalScoredTick + beforeTouchTick + 1;
         }
 //        System.out.println("beforeTouch: " + beforeTouch);
@@ -284,7 +358,7 @@ public class RobotLookAhead {
             GamePlanResult res = predictRobotBallFutureGround(rules, ph, ballTrace, myRobotPvAtStart, targetVelocity,
                     useNitroOnGround);
 
-            if(optimal == null || optimal.beforeBallTouchTick < 0 ||
+            if (optimal == null || optimal.beforeBallTouchTick < 0 ||
                     res.beforeBallTouchTick > 0 && res.beforeBallTouchTick < optimal.beforeBallTouchTick) {
                 optimal = res;
                 optAngleConditionMatched = Optional.of(minAngle + dangle * i);
@@ -390,7 +464,7 @@ public class RobotLookAhead {
                 precalculatedForThisSpeed = phys.tangJumpFromSpeedWithoutNitro.get(Constants.ROBOT_MAX_GROUND_SPEED_I);
             }
 
-            if (afterJumpTick > precalculatedForThisSpeed.size()) {
+            if (afterJumpTick >= precalculatedForThisSpeed.size()) {
                 return null;
             }
 
@@ -420,7 +494,7 @@ public class RobotLookAhead {
                 precalculatedForHiSpeed = phys.tangJumpFromSpeedWithoutNitro.get((int) hi);
             }
 
-            if (afterJumpTick > precalculatedForLowSpeed.size() || afterJumpTick > precalculatedForHiSpeed.size()) {
+            if (afterJumpTick >= precalculatedForLowSpeed.size() || afterJumpTick >= precalculatedForHiSpeed.size()) {
                 return null;
             }
 

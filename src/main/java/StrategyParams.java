@@ -16,7 +16,9 @@ public class StrategyParams {
     public int ticksOffsetMin = -10;
     public int ticksOffsetStart = 1;//
 
-    public int useNitroOnGroundAmount = 25;
+//    public int useNitroOnGroundAmount = 25;
+//    public int useNitroOnFlyAmount = 50;
+    public int useNitroOnGroundAmount = 101;
     public int useNitroOnFlyAmount = 50;
-    public static int fewTickMore = 4;
+    public static int fewTickMore = 2;
 }

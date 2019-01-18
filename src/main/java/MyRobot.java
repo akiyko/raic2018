@@ -93,6 +93,7 @@ public class MyRobot extends Entity {
     @Override
     public String toString() {
         return "MyRobot{" +
+                "id=" + id +
                 "position=" + position +
                 ", velocity=" + velocity +
                 ", action=" + action +

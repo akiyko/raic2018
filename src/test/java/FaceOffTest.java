@@ -8,7 +8,7 @@ public class FaceOffTest {
 
     @Test
     public void testFin() throws Exception {
-        FaceOff faceOff = new FaceOff(new FinalStrategy(), new DoNothingMyStrategy());
+        FaceOff faceOff = new FaceOff(new FinalStrategy(), new JustKickStrategy());
         faceOff.unlimitedNitro = true;
 
         faceOff.simulate();

@@ -266,7 +266,7 @@ public class RobotLookAheadTest {
         r.action.target_velocity = targetVeloGround;
         r.nitro = 100;
 
-        int jumpTick = 0;
+        int jumpTick = 20;
         boolean nitroOonFly = true;
         boolean nitroOnground = true;
 

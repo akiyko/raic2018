@@ -6,4 +6,8 @@ public interface RobotAction {
     MyAction act(int currentTick, PV thisRobotCurrentPV);
     int validFromTick();
     int validToTick();
+
+    default boolean isGoal() {
+        return false;
+    }
 }

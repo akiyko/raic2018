@@ -33,4 +33,9 @@ public class RobotActionRunJumpTang extends RobotActionAbstract {
 
         return myAction;
     }
+
+    @Override
+    public boolean isGoal() {
+        return true;
+    }
 }

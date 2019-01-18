@@ -14,6 +14,9 @@ public class Simulator {
         double distance = delta_position.length();
         double penetration = a.radius + b.radius - distance;
         if (penetration > 0) {
+            System.out.println("Collision: " + a );
+            System.out.println("Collision: " + b );
+
             double k_a = (1 / a.mass) / ((1 / a.mass) + (1 / b.mass));
             double k_b = (1 / b.mass) / ((1 / a.mass) + (1 / b.mass));
             Vector3d normal = delta_position.normalize();
@@ -26,6 +29,9 @@ public class Simulator {
                 a.velocity = a.velocity.plus(impulse.multiply(k_a));
                 b.velocity = b.velocity.minus(impulse.multiply(k_b));
             }
+
+            System.out.println("After Collision: " + a );
+            System.out.println("After Collision: " + b );
         }
     }
 

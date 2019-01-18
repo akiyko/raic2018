@@ -10,7 +10,7 @@ public class RobotMoveJumpPlan {
     public boolean useNitroOnFly;
 
     public RobotAction toRobotAction(int currentTick) {
-        return new RobotActionRunJumpTang(currentTick, gamePlanResult.beforeBallTouchTick + StrategyParams.fewTickMore,
+        return new RobotActionRunJumpTang(currentTick, currentTick + gamePlanResult.beforeBallTouchTick + StrategyParams.fewTickMore,
                 targetVelocity, currentTick + jumpTick, useNitroOnGround, useNitroOnFly);
     }
 

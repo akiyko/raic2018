@@ -67,12 +67,23 @@ public class FaceOff {
             Map<Integer, MyRobot> myRobotMapNegateZ = toMapCloneNegateZ(myrobots);
             Map<Integer, MyRobot> oppRobMapNegateZ = toMapCloneNegateZ(opprobots);
 
+
+
+
+
             myStrategy.act(myRobotMap, oppRobMap, myBall.clone(), arena, i);
             opponentStrategy.act(oppRobMapNegateZ, myRobotMapNegateZ, myBall.cloneNegateZ(), arena, i);
 
-//            myRobotMap.forEach((id, mr) -> {
-//                System.out.println(id +  "-> " + mr.action);
-//            });
+
+            if(myBall.position.y < -39) {
+                System.out.println(myBall);
+                for (MyRobot robot : robots) {
+                    if(robot.id < 3) {
+                        System.out.println(robot);
+                    }
+                }
+            }
+
 
 
             for (Map.Entry<Integer, MyRobot> entry : myRobotMap.entrySet()) {
@@ -99,7 +110,7 @@ public class FaceOff {
 
             try {
 //                System.out.println(robots);
-                System.out.println(i + "=============");
+//                System.out.println(i + "=============");
                 if(unlimitedNitro) {
                     for (MyRobot robot : robots) {//TODO: test nitro always available
                         robot.nitro = 100;
@@ -108,17 +119,22 @@ public class FaceOff {
 
                 Simulator.tick(rules, robots, myBall);
 
-                System.out.println("mraction:" + myrobots.get(0).action);
+//                System.out.println("mraction:" + myrobots.get(0).action);
 
                 robots.forEach(r -> r.action = new MyAction());
-                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
-                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
+//                System.out.println(i + "\tb: " + myBall.position + " / p0: " + myrobots.get(0).position/* + "/ p1" + myrobots.get(1).position*/);
+//                System.out.println(i + "\tb: " + myBall.velocity + " :ground speed = " + myBall.velocity.zeroY().length());
             } catch (GoalScoredException e) {
+                System.out.println(myBall);
+                for (MyRobot robot : robots) {
+                    System.out.println(robot);
+                }
+
                 if (e.getZ() > 0) {
-//                    System.out.println("Goal scored for me at tick " + i);
+                    System.out.println("Goal scored for me at tick " + i);
                     myGoals++;
                 } else {
-//                    System.out.println("Goal scored for opponent at tick " + i);
+                    System.out.println("Goal scored for opponent at tick " + i);
                     oppGoals++;
                 }
 

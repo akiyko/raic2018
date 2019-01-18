@@ -12,6 +12,8 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
     RobotPrecalcPhysics phys = null;
 
     Map<Integer, RobotAction> activeActions = new HashMap<>();
+    Map<Integer, RobotMoveJumpPlan> thisTickGoals = new HashMap<>();
+    Map<Integer, RobotMoveJumpPlan> previousTickGoals = new HashMap<>();
     BallTrace bt; //this tick ball trace
 
     @Override
@@ -36,15 +38,29 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
                                  MyBall ball, Arena arena, int currentTick) {
 
         Map<Integer, RobotMoveJumpPlan> goals = new HashMap<>();
+        thisTickGoals.clear();
 
         for (MyRobot myRobot : myRobots.values()) {
+
             if (myRobot.touch && Vector3d.dot(myRobot.touch_normal, Vector3d.of(0.0, 1.0, 0.0)) > 0.99) {
                 //check previous
+                RobotMoveJumpPlan prevGoalPlan = previousTickGoals.get(myRobot.id);
 
-                List<RobotMoveJumpPlan> rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, myRobot.clone(), bt, p);
+                List<RobotMoveJumpPlan> rmjp = new ArrayList<>();
+
+                if (prevGoalPlan != null) {
+                    Optional<RobotMoveJumpPlan> prevChecked =
+                            RobotLookAhead.robotMoveJumpGooalOptionsCheckPrevious(rules, phys, myRobot.pv(), bt, prevGoalPlan, p);
+                    if (prevChecked.isPresent()) {
+                        rmjp.add(prevChecked.get());
+                    }
+                } else {
+                    rmjp = RobotLookAhead.robotMoveJumpGoalOptions(rules, phys, myRobot.clone(), bt, p);
+                }
                 if (!rmjp.isEmpty()) {
                     RobotMoveJumpPlan rmjplan = rmjp.get(0);
                     goals.put(myRobot.id, rmjplan);
+                    thisTickGoals.put(myRobot.id, rmjplan);
                 }
             }
         }
@@ -57,12 +73,21 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
             Map.Entry<Integer, RobotMoveJumpPlan> bestGoalPlan = goals.entrySet().stream().filter(e -> e.getValue().gamePlanResult.goalScoredTick == bestGoal.getAsInt())
                     .findAny().orElse(null);
 
+            System.out.println(currentTick + ", p: " + bestGoalPlan.getKey() + " " + bestGoalPlan.getValue());
+
+
             if (bestGoalPlan != null) {
+                //cleanup other active 'goal' actions
+                activeActions.entrySet()
+                        .removeIf(e -> e.getValue().isGoal());
 
                 activeActions.put(bestGoalPlan.getKey(),
                         bestGoalPlan.getValue().toRobotAction(currentTick));
             }
         }
+
+        previousTickGoals.clear();
+        previousTickGoals.putAll(thisTickGoals);
 //
     }
 
@@ -81,19 +106,39 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
 
     }
 
+    public void actBackDefendPosition(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots,
+                                      MyBall ball, Arena arena, int currentTick) {
+        Map<Integer, MyRobot> notActionedRobots = notActionedRobots(myRobots);
+
+        Position dfb = new Position(0, 1, -0.5 * rules.arena.depth );
+
+        MyRobot closest = notActionedRobots.values().stream().min(Comparator.comparing(r -> ((Double) dfb.minus(r.position).length())))
+                .orElse(null);
+
+        if(closest != null) {
+            Vector3d target_velocity =
+                    new Position(ball.position.x, 1, -0.5 * rules.arena.depth + 1).minus(closest.position).zeroY()
+                            .normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+            activeActions.put(closest.id, new RobotMoveAction(currentTick, currentTick, target_velocity));
+        }
+
+    }
+
     public void actBackToGates(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots,
                                MyBall ball, Arena arena, int currentTick) {
         Map<Integer, MyRobot> notActionedRobots = notActionedRobots(myRobots);
 
-        notActionedRobots.forEach(
-                (id, mr) -> {
-                    Vector3d target_velocity =
-                            new Position(0, 1, -0.5 * rules.arena.depth).minus(mr.position).zeroY()
-                                    .normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
-                    activeActions.put(id, new RobotMoveAction(currentTick, currentTick, target_velocity));
-                }
-        );
+        Position dfb = new Position(ball.position.x, 1, -0.5 * rules.arena.depth + 1);
 
+        MyRobot closest = notActionedRobots.values().stream().min(Comparator.comparing(r -> ((Double) dfb.minus(r.position).length())))
+                .orElse(null);
+
+        if(closest != null) {
+            Vector3d target_velocity =
+                    new Position(ball.position.x, 1, -0.5 * rules.arena.depth + 1).minus(closest.position).zeroY()
+                            .normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
+            activeActions.put(closest.id, new RobotMoveAction(currentTick, currentTick, target_velocity));
+        }
     }
 
     public void setActions(Map<Integer, MyRobot> myRobots, int currentTick) {
@@ -123,7 +168,9 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
         actNitroHunt(myRobots, opponentRobots, ball, arena, currentTick);
         actPositioning(myRobots, opponentRobots, ball, arena, currentTick);
         actAgainstEnemy(myRobots, opponentRobots, ball, arena, currentTick);
+
         actBackToGates(myRobots, opponentRobots, ball, arena, currentTick);
+        actBackDefendPosition(myRobots, opponentRobots, ball, arena, currentTick);
 
         setActions(myRobots, currentTick);
     }
