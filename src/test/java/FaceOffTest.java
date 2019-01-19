@@ -16,11 +16,26 @@ public class FaceOffTest {
     }
 
     @Test
-    public void testFinLahKickLahKick() throws Exception {
-        FaceOff faceOff = new FaceOff(new FinalStrategy(), new SingleKickGoalLahStrategy(false));
-        faceOff.unlimitedNitro = true;
+    public void testCorners() throws Exception {
+        for (int i = 0; i < 50; i++) {
 
-        faceOff.simulate();
+            FaceOff faceOff = new FaceOff(new FinalStrategy(false), new FinalStrategy(true));
+            faceOff.unlimitedNitro = true;
+
+            faceOff.simulate();
+        }
+
+    }
+
+    @Test
+    public void testFinLahKickLahKick() throws Exception {
+        for (int i = 0; i < 50; i++) {
+            FaceOff faceOff = new FaceOff(new FinalStrategy(true), new SingleKickGoalLahStrategy(false));
+            faceOff.unlimitedNitro = true;
+
+            faceOff.simulate();
+
+        }
 
     }
 

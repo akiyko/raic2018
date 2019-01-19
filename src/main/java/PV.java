@@ -1,3 +1,5 @@
+import model.Arena;
+
 import java.util.List;
 
 /**
@@ -10,6 +12,26 @@ public class PV {
     private PV(Position p, Vector3d v) {
         this.p = p;
         this.v = v;
+    }
+
+    public boolean isOnPlate(Arena arena) {
+//        if(StrategyParams.fearCorners) {
+//            if (Math.abs(p.x) > arena.width * 0.5 - arena.bottom_radius) {
+//                return Math.abs(p.x) < arena.width * 0.5 - arena.bottom_radius
+//                        && Math.abs(p.z) < arena.depth * 0.5 - arena.bottom_radius;
+//            }
+//        }
+        return true;
+
+    }
+
+    public boolean isInArena(Arena arena) {
+//        if(StrategyParams.fearCorners) {
+//                return Math.abs(p.x) < arena.width * 0.5
+//                        && Math.abs(p.z) < arena.depth * 0.5;
+//        }
+        return true;
+
     }
 
     public static PV middlePv(PV pv1, PV pv2, double d) {

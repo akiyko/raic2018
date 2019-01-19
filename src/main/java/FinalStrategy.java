@@ -10,11 +10,21 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
 
     final StrategyParams p = new StrategyParams();
     RobotPrecalcPhysics phys = null;
+    public boolean fearCoreners = false;
 
     Map<Integer, RobotAction> activeActions = new HashMap<>();
     Map<Integer, RobotMoveJumpPlan> thisTickGoals = new HashMap<>();
     Map<Integer, RobotMoveJumpPlan> previousTickGoals = new HashMap<>();
     BallTrace bt; //this tick ball trace
+    BallTrace oppKickBt; //this tick ball trace expecting opponent nearest to ball opponent run forwar, jump and kick
+
+
+    public FinalStrategy(boolean fearCoreners) {
+        this.fearCoreners = fearCoreners;
+    }
+
+    public FinalStrategy() {
+    }
 
     @Override
     public void computeTickLogic(int tickNumber, Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Rules rules) {
@@ -115,9 +125,19 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
         MyRobot closest = notActionedRobots.values().stream().min(Comparator.comparing(r -> ((Double) dfb.minus(r.position).length())))
                 .orElse(null);
 
+        double defx = ball.position.x;
+        double defz = -0.5 * rules.arena.depth + 1;
+        if(StrategyParams.fearCorners) {
+            defz = -0.5 * rules.arena.depth + arena.bottom_radius;
+            if(ball.position.x > 0) {
+                defx = Math.min(ball.position.x, rules.arena.width * 0.5 - arena.bottom_radius);
+            } else {
+                defx = Math.max(ball.position.x, -rules.arena.width * 0.5 + arena.bottom_radius);
+            }
+        }
         if(closest != null) {
             Vector3d target_velocity =
-                    new Position(ball.position.x, 1, -0.5 * rules.arena.depth + 1).minus(closest.position).zeroY()
+                    new Position(defx, 1, defz).minus(closest.position).zeroY() //TODO:!!! not to edge
                             .normalize().multiply(Constants.ROBOT_MAX_GROUND_SPEED);
             activeActions.put(closest.id, new RobotMoveAction(currentTick, currentTick, target_velocity));
         }
@@ -157,8 +177,10 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
     @Override
     public void act(Map<Integer, MyRobot> myRobots, Map<Integer, MyRobot> opponentRobots, MyBall ball, Arena arena, int currentTick) {
         if (phys == null) {
+            StrategyParams.arena = arena;
             phys = RobotPrecalcPhysics.calculate(rules);
         }
+        StrategyParams.fearCorners = fearCoreners;
 
         bt = LookAhead.ballUntouchedTraceOptimized(rules, ball.clone(), p.ballTickDepth, p.mpt);
 

@@ -1,3 +1,5 @@
+import model.Arena;
+
 /**
  * @author akiyko
  * @since 1/11/2019.
@@ -21,4 +23,10 @@ public class StrategyParams {
     public int useNitroOnGroundAmount = 101;
     public int useNitroOnFlyAmount = 50;
     public static int fewTickMore = 2;
+
+    public static boolean fearCorners = true;
+    public static Arena arena;
+
+    public static boolean random_on = false;
+
 }

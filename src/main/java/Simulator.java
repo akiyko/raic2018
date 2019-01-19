@@ -9,13 +9,14 @@ import java.util.List;
  */
 public class Simulator {
 
+
     public static void collideEntities(Entity a, Entity b) {
         Vector3d delta_position = Position.minus(b.position, a.position);
         double distance = delta_position.length();
         double penetration = a.radius + b.radius - distance;
         if (penetration > 0) {
-            System.out.println("Collision: " + a );
-            System.out.println("Collision: " + b );
+//            System.out.println("Collision: " + a );
+//            System.out.println("Collision: " + b );
 
             double k_a = (1 / a.mass) / ((1 / a.mass) + (1 / b.mass));
             double k_b = (1 / b.mass) / ((1 / a.mass) + (1 / b.mass));
@@ -26,12 +27,16 @@ public class Simulator {
             if (delta_velocity < 0) {
 //                Vector3d impulse = normal.multiply((1 + random(MIN_HIT_E, MAX_HIT_E)) * delta_velocity); //TODO: testing
                 Vector3d impulse = normal.multiply((1 + 0.5 * (Constants.MIN_HIT_E + Constants.MAX_HIT_E)) * delta_velocity);
-                a.velocity = a.velocity.plus(impulse.multiply(k_a));
+                if(StrategyParams.random_on) {
+                    impulse = normal.multiply((1 + MathUtils.random(Constants.MIN_HIT_E, Constants.MAX_HIT_E)) * delta_velocity);
+                }
+
+                    a.velocity = a.velocity.plus(impulse.multiply(k_a));
                 b.velocity = b.velocity.minus(impulse.multiply(k_b));
             }
 
-            System.out.println("After Collision: " + a );
-            System.out.println("After Collision: " + b );
+//            System.out.println("After Collision: " + a );
+//            System.out.println("After Collision: " + b );
         }
     }
 

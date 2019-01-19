@@ -231,7 +231,7 @@ public class RobotLookAhead {
             MyBall thisTickBall = ballTrace.ballTrace.get(i);
 
             PV mrAtTick = findRobotPvTang(ph, myRobotPv, targetVelocity, useNitroOnGround, useNitroOnJump, i, jumpTick);
-            if (mrAtTick == null) {
+            if (mrAtTick == null || !mrAtTick.isInArena(rules.arena)) {
                 break;
             }
 
@@ -398,7 +398,7 @@ public class RobotLookAhead {
             MyBall thisTickBall = ballTrace.ballTrace.get(i);
 
             PV mrAtTick = findRobotPvTang(ph, myRobotPv, targetVelocity, useNitroOnGround, false, i, i + 1);
-            if (mrAtTick == null) {
+            if (mrAtTick == null || !mrAtTick.isInArena(rules.arena)) {
                 break;
             }
 
@@ -451,6 +451,9 @@ public class RobotLookAhead {
 
         if (jumpTick < tick) {
             pvBeforeJump = LookAhead.robotGroundMove(startOnGround, targetVeloGround, jumpTick, useNitroOnGround);
+            if(StrategyParams.fearCorners && !pvBeforeJump.isOnPlate(StrategyParams.arena)) {
+                return null;
+            }
         } else {
             return LookAhead.robotGroundMove(startOnGround, targetVeloGround, tick, useNitroOnGround);
         }
