@@ -73,7 +73,7 @@ public final class FinalStrategy extends MyMyStrategyAbstract implements MyMyStr
             Map.Entry<Integer, RobotMoveJumpPlan> bestGoalPlan = goals.entrySet().stream().filter(e -> e.getValue().gamePlanResult.goalScoredTick == bestGoal.getAsInt())
                     .findAny().orElse(null);
 
-            System.out.println(currentTick + ", p: " + bestGoalPlan.getKey() + " " + bestGoalPlan.getValue());
+//            System.out.println(currentTick + ", p: " + bestGoalPlan.getKey() + " " + bestGoalPlan.getValue());
 
 
             if (bestGoalPlan != null) {

@@ -1,4 +1,3 @@
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import model.Action;
 import model.Arena;
 import model.Rules;

@@ -12,12 +12,14 @@ public class MyAction {
 
     public Action toAction() {
         Action action = new Action();
-        action.target_velocity_x = target_velocity.dx;
-        action.target_velocity_y = target_velocity.dy;
-        action.target_velocity_z = target_velocity.dz;
+        if(target_velocity != null) { //TODO: where???!!!
+            action.target_velocity_x = target_velocity.dx;
+            action.target_velocity_y = target_velocity.dy;
+            action.target_velocity_z = target_velocity.dz;
 
-        action.jump_speed = jump_speed;
-        action.use_nitro = use_nitro;
+            action.jump_speed = jump_speed;
+            action.use_nitro = use_nitro;
+        }
 
         return action;
     }

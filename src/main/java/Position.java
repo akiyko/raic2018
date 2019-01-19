@@ -1,5 +1,3 @@
-import javafx.geometry.Pos;
-
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
