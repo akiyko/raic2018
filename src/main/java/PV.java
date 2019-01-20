@@ -15,7 +15,7 @@ public class PV {
     }
 
     public boolean isOnPlate(Arena arena) {
-//        if(StrategyParams.fearCorners) {
+//        if(StrategyParams.improving) {
 //            if (Math.abs(p.x) > arena.width * 0.5 - arena.bottom_radius) {
 //                return Math.abs(p.x) < arena.width * 0.5 - arena.bottom_radius
 //                        && Math.abs(p.z) < arena.depth * 0.5 - arena.bottom_radius;
@@ -26,7 +26,7 @@ public class PV {
     }
 
     public boolean isInArena(Arena arena) {
-//        if(StrategyParams.fearCorners) {
+//        if(StrategyParams.improving) {
 //                return Math.abs(p.x) < arena.width * 0.5
 //                        && Math.abs(p.z) < arena.depth * 0.5;
 //        }

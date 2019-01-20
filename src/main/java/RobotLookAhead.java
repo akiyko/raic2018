@@ -451,7 +451,7 @@ public class RobotLookAhead {
 
         if (jumpTick < tick) {
             pvBeforeJump = LookAhead.robotGroundMove(startOnGround, targetVeloGround, jumpTick, useNitroOnGround);
-            if(StrategyParams.fearCorners && !pvBeforeJump.isOnPlate(StrategyParams.arena)) {
+            if(StrategyParams.improving && !pvBeforeJump.isOnPlate(StrategyParams.arena)) {
                 return null;
             }
         } else {

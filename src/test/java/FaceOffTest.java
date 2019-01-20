@@ -16,7 +16,7 @@ public class FaceOffTest {
     }
 
     @Test
-    public void testCorners() throws Exception {
+    public void testImprove() throws Exception {
         for (int i = 0; i < 50; i++) {
 
             FaceOff faceOff = new FaceOff(new FinalStrategy(false), new FinalStrategy(true));

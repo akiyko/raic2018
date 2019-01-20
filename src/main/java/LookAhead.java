@@ -460,7 +460,11 @@ public class LookAhead {
 
 
     public static BallGoal ballFlyUntouched(Rules rules, MyBall mb) {
+
         double goal_z = rules.arena.depth / 2 + mb.radius;
+        if(StrategyParams.improving) {
+            goal_z = rules.arena.depth;
+        }
 
         if (MathUtils.isZero(mb.velocity.dz)) {
             return new BallGoal();//no goals

@@ -24,7 +24,7 @@ public class StrategyParams {
     public int useNitroOnFlyAmount = 50;
     public static int fewTickMore = 2;
 
-    public static boolean fearCorners = true;
+    public static boolean improving = true;
     public static Arena arena;
 
     public static boolean random_on = false;
